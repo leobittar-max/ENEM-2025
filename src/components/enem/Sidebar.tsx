@@ -5,10 +5,6 @@ interface SidebarProps {
   occurrences: Occurrence[];
   currentTime: string;
   currentStage: string;
-  criticalSummary?: {
-    totalCritical: number;
-    completedCritical: number;
-  };
   onCloseMobile?: () => void;
   onOpenHistory: () => void;
   onBackToPanel?: () => void;
@@ -21,18 +17,12 @@ export const Sidebar = ({
   occurrences,
   currentTime,
   currentStage,
-  criticalSummary,
   onCloseMobile,
   onOpenHistory,
   onBackToPanel,
   onExit,
   showBackToPanel,
 }: SidebarProps) => {
-  const totalCritical = criticalSummary?.totalCritical ?? 0;
-  const completedCritical = criticalSummary?.completedCritical ?? 0;
-  const hasCritical = totalCritical > 0;
-  const allDone = hasCritical && completedCritical === totalCritical;
-
   return (
     <aside className="flex h-full w-72 flex-col gap-4 border-r border-border bg-sidebar px-4 py-4 text-sm shadow-sm md:h-screen">
       <div className="flex items-start justify-between gap-2">
@@ -98,40 +88,6 @@ export const Sidebar = ({
         </div>
       </div>
 
-      {/* Indicador global de itens críticos */}
-      {hasCritical && (
-        <div className="space-y-1">
-          <SectionLabel>Conformidade crítica</SectionLabel>
-          <div
-            className={[
-              "rounded-md px-3 py-2 border text-[9px] space-y-1",
-              allDone
-                ? "bg-emerald-50 border-emerald-300 text-emerald-800"
-                : "bg-amber-50 border-amber-300 text-amber-800",
-            ].join(" ")}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-semibold">
-                {allDone ? "Todos os itens críticos cumpridos" : "Itens críticos essenciais"}
-              </span>
-              <span className="text-[8px] font-semibold">
-                {completedCritical}/{totalCritical}
-              </span>
-            </div>
-            {!allDone && (
-              <p className="text-[8px] leading-snug">
-                Priorize malotes, acessibilidade, equipe mínima e segurança antes de seguir.
-              </p>
-            )}
-            {allDone && (
-              <p className="text-[8px] leading-snug">
-                Você está alinhado às exigências essenciais do manual neste momento.
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-
       <div className="space-y-2">
         <SectionLabel>Resumo rápido</SectionLabel>
         <div className="grid grid-cols-3 gap-1.5 text-center text-[9px]">
@@ -147,6 +103,7 @@ export const Sidebar = ({
         </div>
       )}
 
+      {/* Ações principais */}
       <div className="mt-3 space-y-2">
         <button
           type="button"
@@ -176,7 +133,7 @@ export const Sidebar = ({
           ⏏ Sair do Painel
         </button>
         <div className="text-[8px] text-sidebar-foreground/60">
-          Use este painel como guia operacional; consulte sempre o Manual do Coordenador ENEM 2025.
+          Use este painel como guia operacional; observe sempre os comunicados oficiais do INEP.
         </div>
       </div>
     </aside>

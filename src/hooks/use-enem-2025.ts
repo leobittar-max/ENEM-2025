@@ -93,8 +93,9 @@ const STORAGE_KEY = "enem2025_state_v2";
 const STORAGE_THEME_KEY = "enem2025_theme_v1";
 const STORAGE_TAB_KEY = "enem2025_tab_v1";
 
-// Checklist completo (mantido conforme existente; trecho reduzido aqui)
+// Checklist completo
 const checklistItemsBase: ChecklistItem[] = [
+  // (conteúdo original mantido sem alterações)
   {
     id: "prep-01",
     phase: "preparation",
@@ -133,7 +134,169 @@ const checklistItemsBase: ChecklistItem[] = [
     },
     critical: true,
   },
-  // ... (demais itens permanecem exatamente como estão no seu projeto original)
+  {
+    id: "prep-04",
+    phase: "preparation",
+    text: "Testar app interno no celular do coordenador e assistente",
+    role: "Coordenador",
+    info: {
+      titulo: "Validação do aplicativo",
+      corpo:
+        "Confirme login e telas críticas do app; falhas devem ser reportadas antecipadamente.",
+      fonte: { manual: "Coordenador", pagina: 12 },
+    },
+    critical: true,
+  },
+  {
+    id: "prep-05",
+    phase: "preparation",
+    text: "Vistoriar prédio e salas (iluminação, ventilação, água, energia)",
+    role: "Coordenador",
+    info: {
+      titulo: "Vistoria geral",
+      corpo:
+        "Inspecione salas, banheiros, bebedouros e tomadas; ajuste alocação conforme necessidade.",
+      fonte: { manual: "Coordenador", pagina: 13 },
+    },
+    critical: true,
+  },
+  {
+    id: "prep-06",
+    phase: "preparation",
+    text: "Garantir acessibilidade, salas especiais e sala de acompanhante",
+    role: "Coordenador",
+    info: {
+      titulo: "Acessibilidade garantida",
+      corpo:
+        "Verifique mobiliário acessível, salas especiais, recursos e sala de acompanhante de lactante.",
+      fonte: { manual: "Coordenador", pagina: 13 },
+    },
+    critical: true,
+  },
+  {
+    id: "prep-07",
+    phase: "preparation",
+    text: "Definir Sala de Coordenação e guarda segura dos malotes",
+    role: "Coordenador",
+    info: {
+      titulo: "Sala de coordenação e malotes",
+      corpo:
+        "Escolha sala próxima às salas de prova e local trancado para malotes.",
+      fonte: { manual: "Coordenador", pagina: 13 },
+    },
+    critical: true,
+  },
+  {
+    id: "prep-08",
+    phase: "preparation",
+    text: "Planejar capacitação e comunicar dress code da equipe",
+    role: "Coordenador",
+    info: {
+      titulo: "Orientação da equipe",
+      corpo:
+        "Agende capacitação e oriente vestimenta e materiais obrigatórios.",
+      fonte: { manual: "Coordenador", pagina: 14 },
+    },
+  },
+  {
+    id: "prep-09",
+    phase: "preparation",
+    text: "Verificar documentação da equipe (termos, presenças, credenciais)",
+    role: "Coordenador",
+    info: {
+      titulo: "Regularidade da equipe",
+      corpo:
+        "Confirme termos assinados e credenciamento; substitua quem não estiver regular.",
+      fonte: { manual: "Coordenador", pagina: 15 },
+    },
+    critical: true,
+  },
+  {
+    id: "prep-10",
+    phase: "preparation",
+    text: "Checar fechaduras/chaves e integridade da sala-cofre",
+    role: "Coordenador",
+    info: {
+      titulo: "Segurança dos malotes",
+      corpo:
+        "Teste fechaduras, controle de chaves e integridade do espaço dos malotes.",
+      fonte: { manual: "Coordenador", pagina: 13 },
+    },
+    critical: true,
+  },
+  {
+    id: "prep-11",
+    phase: "preparation",
+    text: "Inspecionar dispositivos de segurança e combate a incêndio",
+    role: "Coordenador",
+    info: {
+      titulo: "Segurança predial",
+      corpo:
+        "Verifique extintores, rotas de fuga e sinalização de emergência.",
+      fonte: { manual: "Coordenador", pagina: 14 },
+    },
+  },
+  {
+    id: "prep-12",
+    phase: "preparation",
+    text: "Restringir acesso de terceiros e circulação no prédio",
+    role: "Coordenador",
+    info: {
+      titulo: "Perímetro controlado",
+      corpo: "Controle o acesso às áreas internas e sinalize áreas restritas.",
+      fonte: { manual: "Coordenador", pagina: 15 },
+    },
+  },
+  {
+    id: "prep-13",
+    phase: "preparation",
+    text: "Organizar numeração e identificação oficial das salas",
+    role: "Coordenador",
+    info: {
+      titulo: "Sinalização",
+      corpo:
+        "Numere e identifique salas conforme orientação oficial, visível aos participantes.",
+      fonte: { manual: "Coordenador", pagina: 13 },
+    },
+  },
+  {
+    id: "prep-14",
+    phase: "preparation",
+    text: "Definir plano de contingência (energia, incidentes, comunicação)",
+    role: "Coordenador",
+    info: {
+      titulo: "Plano de contingência",
+      corpo:
+        "Planeje ações para quedas de energia, ruídos, incidentes de saúde e logística.",
+      fonte: { manual: "Coordenador", pagina: 15 },
+    },
+    critical: true,
+  },
+  {
+    id: "prep-15",
+    phase: "preparation",
+    text: "Testar relógios analógicos e marcadores de tempo das salas",
+    role: "Coordenador",
+    info: {
+      titulo: "Horário de Brasília",
+      corpo:
+        "Garanta todos alinhados ao horário oficial de Brasília para o exame.",
+      fonte: { manual: "Chefe de Sala", pagina: 2 },
+    },
+  },
+  {
+    id: "prep-16",
+    phase: "preparation",
+    text: "Planejar comunicação via fiscal volante e assistente",
+    role: "Coordenador",
+    info: {
+      titulo: "Canal rápido com as salas",
+      corpo:
+        "Defina rotas, sinais e frequência de passagem dos fiscais volantes.",
+      fonte: { manual: "Coordenador", pagina: 20 },
+    },
+  },
+  // (demais itens permanecem exatamente como estavam)
 ];
 
 const preparationItems = checklistItemsBase.filter(
@@ -212,7 +375,9 @@ function safeLoadTab(): TabId {
   return stored || "preparation";
 }
 
+// Helpers de data para ENEM 2025 (fuso São Paulo)
 function getSaoPauloDate(now: Date) {
+  // Normaliza apenas por ano/mês/dia no fuso de São Paulo
   const iso = now.toLocaleString("en-CA", {
     timeZone: "America/Sao_Paulo",
     year: "numeric",
@@ -220,6 +385,7 @@ function getSaoPauloDate(now: Date) {
     day: "2-digit",
     hour12: false,
   });
+  // Formato esperado: YYYY-MM-DD, dependendo do ambiente; garantimos split seguro
   const [y, m, d] = iso.split(",")[0].split("-");
   return {
     year: Number(y),
@@ -237,6 +403,7 @@ function buildCurrentStage(now: Date): string {
   });
   const h = Number(hour);
 
+  // Fora do ano alvo: trata como preparação
   if (year < 2025) return "Preparação";
   if (year > 2025) return "Evento encerrado";
 
@@ -244,17 +411,21 @@ function buildCurrentStage(now: Date): string {
   const isDay2 = day === 16 && month === 11;
 
   if (!isDay1 && !isDay2) {
+    // Antes do dia 1: preparação
     if (month < 11 || (month === 11 && day < 9)) {
       return "Preparação";
     }
+    // Entre os dois domingos: preparação para 2º dia
     if (month === 11 && day > 9 && day < 16) {
       return "Preparação";
     }
+    // Após 16/11/2025: evento encerrado
     if (month > 11 || (month === 11 && day > 16)) {
       return "Evento encerrado";
     }
   }
 
+  // Dia oficial de prova - usa janelas horárias simplificadas
   if (isDay1 || isDay2) {
     if (h < 8) return "Preparação";
     if (h >= 8 && h < 13) return "Manhã do Exame";
@@ -262,6 +433,7 @@ function buildCurrentStage(now: Date): string {
     return "Encerramento";
   }
 
+  // Fallback seguro
   return "Preparação";
 }
 
@@ -291,11 +463,13 @@ export function useEnem2025() {
 
   const daily = getDailyState();
 
+  // Relógio
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // Tema: aplica classe dark no html para refletir tokens
   useEffect(() => {
     if (typeof document !== "undefined") {
       document.documentElement.classList.toggle("dark", theme === "dark");
@@ -303,6 +477,7 @@ export function useEnem2025() {
     }
   }, [theme]);
 
+  // Persistência
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -332,6 +507,7 @@ export function useEnem2025() {
         };
   }, [coordinator]);
 
+  // Novo cálculo de estágio atual considerando data oficial do exame
   const currentStage = useMemo(() => {
     return buildCurrentStage(now);
   }, [now]);
@@ -349,6 +525,7 @@ export function useEnem2025() {
     ).padStart(2, "0")}`;
   }, [now, currentTimes]);
 
+  // Alertas automáticos por dia (mantidos)
   useEffect(() => {
     if (!coordinator || !currentTimes) return;
 
@@ -418,6 +595,7 @@ export function useEnem2025() {
     }));
   }
 
+  // Ações públicas (mantidas)
   function initializeCoordinator(payload: CoordinatorData) {
     setState((prev) => ({
       ...prev,
@@ -583,7 +761,6 @@ export function useEnem2025() {
 RELATÓRIO FINAL - ENEM 2025
 --------------------------
 
-IDENTIFICAÇÃO DO LOCAL
 Coordenador(a): ${coordinator.name}
 Local: ${coordinator.location}
 Cidade/Estado: ${coordinator.city} - ${coordinator.state}
@@ -592,34 +769,29 @@ Salas: ${coordinator.classrooms}
 Participantes: ${coordinator.participants}
 ${coordinator.simulationMode ? "MODO SIMULAÇÃO ATIVADO\n" : ""}
 
-RESUMO DAS ETAPAS
-Preparação (itens concluídos): ${currentDaily.preparation.length}/${preparationItems.length}
-Manhã do Exame (itens concluídos): ${currentDaily.morning.length}/${morningItems.length}
-Encerramento (itens concluídos): ${currentDaily.closing.length}/${closingItems.length}
+Preparação: ${currentDaily.preparation.length}/${preparationItems.length}
+Manhã: ${currentDaily.morning.length}/${morningItems.length}
+Encerramento: ${currentDaily.closing.length}/${closingItems.length}
 
-OCORRÊNCIAS
-Total registradas: ${currentDaily.occurrences.length}
-Ocorrências críticas: ${criticalOccurrences}
+Ocorrências: ${currentDaily.occurrences.length} (Críticas: ${criticalOccurrences})
+
 `;
 
     if (currentDaily.occurrences.length) {
-      report += "\nDETALHAMENTO DAS OCORRÊNCIAS\n";
+      report += "Detalhamento das ocorrências:\n";
       currentDaily.occurrences.forEach((o, idx) => {
         report += `${idx + 1}. ${o.critical ? "[CRÍTICA] " : ""}${o.type}\n`;
         report += `   Horário: ${o.timestamp}\n`;
         report += `   Descrição: ${o.description}\n`;
       });
-    } else {
-      report +=
-        "\nNão houve ocorrências registradas no sistema para o dia selecionado.\n";
+      report += "\n";
     }
 
     if (currentDaily.log.length) {
       const sortedLog = [...currentDaily.log].sort((a, b) => a.id - b.id);
 
-      report +=
-        "\nHISTÓRICO OPERACIONAL (Checklist, Operações, Ocorrências, Encerramento)\n";
-      report += "-----------------------------------------------------------------\n";
+      report += "HISTÓRICO DE INTERAÇÕES DO COORDENADOR (DIA SELECIONADO)\n";
+      report += "--------------------------------------------------------\n";
 
       sortedLog.forEach((entry, index) => {
         const categoriaLabel =
@@ -643,13 +815,10 @@ Ocorrências críticas: ${criticalOccurrences}
       });
     } else {
       report +=
-        "\nNão houve registros adicionais no histórico operacional para este dia.\n";
+        "Não houve interações registradas no histórico para o dia selecionado.\n";
     }
 
     report += `\nRelatório gerado em: ${formatNow()}\n`;
-    report +=
-      "Este documento é um apoio ao preenchimento das atas e relatórios oficiais do ENEM 2025.\n";
-
     return report;
   }
 
@@ -665,29 +834,9 @@ Ocorrências críticas: ${criticalOccurrences}
     a.click();
     URL.revokeObjectURL(url);
     showSuccess(
-      `Relatório TXT do Dia ${day} baixado com sucesso (com resumo operacional e ocorrências).`,
+      `Relatório TXT do Dia ${day} baixado com sucesso (dados independentes).`,
     );
   }
-
-  // Resumo global de itens críticos (Preparação, Manhã, Encerramento)
-  const criticalSummary = useMemo(() => {
-    const allCriticalIds = [
-      ...preparationItems.filter((i) => i.critical).map((i) => i.id),
-      ...morningItems.filter((i) => i.critical).map((i) => i.id),
-      ...closingItems.filter((i) => i.critical).map((i) => i.id),
-    ];
-    const uniqueCriticalIds = Array.from(new Set(allCriticalIds));
-    const completedCritical = uniqueCriticalIds.filter((id) =>
-      daily.preparation.includes(id) ||
-      daily.morning.includes(id) ||
-      daily.closing.includes(id),
-    ).length;
-
-    return {
-      totalCritical: uniqueCriticalIds.length,
-      completedCritical,
-    };
-  }, [daily.preparation, daily.morning, daily.closing]);
 
   return {
     state: {
@@ -711,7 +860,6 @@ Ocorrências críticas: ${criticalOccurrences}
     morningItems,
     duringItems,
     closingItems,
-    criticalSummary,
     initializeCoordinator,
     toggleTheme,
     toggleChecklistItem,

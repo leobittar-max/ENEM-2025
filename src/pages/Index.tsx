@@ -24,7 +24,6 @@ const Index = () => {
     preparationItems,
     morningItems,
     closingItems,
-    criticalSummary,
     initializeCoordinator,
     toggleTheme,
     toggleChecklistItem,
@@ -44,6 +43,11 @@ const Index = () => {
     minute: "2-digit",
     second: "2-digit",
   });
+
+  const examDateLabel =
+    coordinator?.examDay === 2
+      ? "16 de novembro de 2025"
+      : "09 de novembro de 2025";
 
   const showLayout = Boolean(coordinator);
 
@@ -73,7 +77,6 @@ const Index = () => {
               occurrences={state.occurrences}
               currentTime={formattedNow}
               currentStage={currentStage}
-              criticalSummary={criticalSummary}
               onOpenHistory={() => setShowHistory(true)}
               onBackToPanel={handleBackToPanel}
               onExit={handleExit}
@@ -90,7 +93,6 @@ const Index = () => {
                   occurrences={state.occurrences}
                   currentTime={formattedNow}
                   currentStage={currentStage}
-                  criticalSummary={criticalSummary}
                   onCloseMobile={() => setSidebarOpen(false)}
                   onOpenHistory={() => {
                     setSidebarOpen(false);
@@ -133,18 +135,6 @@ const Index = () => {
                   <div className="text-[10px] text-muted-foreground truncate">
                     {coordinator.city} - {coordinator.state}
                   </div>
-                  <div className="text-[8px] text-primary mt-0.5">
-                    {currentStage === "Preparação" &&
-                      "Use este painel para garantir todos os itens críticos antes do dia oficial."}
-                    {currentStage === "Manhã do Exame" &&
-                      "Siga o cronograma oficial: equipe posicionada, portões, conferências e entrada segura."}
-                    {currentStage === "Durante a Aplicação" &&
-                      "Acompanhe ocorrências, segurança, acessibilidade e tempo de prova em tempo real."}
-                    {currentStage === "Encerramento" &&
-                      "Cheque malotes, documentos e itens críticos antes de liberar o local."}
-                    {currentStage === "Evento encerrado" &&
-                      "Consulta de histórico e relatórios para registro e auditoria."}
-                  </div>
                 </div>
                 <div className="hidden sm:flex flex-col items-end text-[8px] text-muted-foreground">
                   <span>
@@ -152,10 +142,6 @@ const Index = () => {
                     <span className="font-semibold text-primary">
                       {currentStage}
                     </span>
-                  </span>
-                  <span className="mt-0.5">
-                    {criticalSummary.completedCritical}/
-                    {criticalSummary.totalCritical} itens críticos concluídos
                   </span>
                 </div>
                 <Button
@@ -170,7 +156,7 @@ const Index = () => {
               </header>
             )}
 
-            {/* TabBar */}
+            {/* TabBar Android-like */}
             {!showHistory && (
               <nav className="bg-card px-2 pb-2 pt-1 border-b border-border">
                 <div className="tabbar-scroll">
@@ -283,7 +269,7 @@ const Index = () => {
                   onClick={downloadTextReport}
                   aria-label="Exportar relatório do local em arquivo TXT"
                 >
-                  📄 Relatório
+                  📄 Exportar Relatório
                 </Button>
                 <Button
                   className="w-24 touch-target text-xs font-semibold"
