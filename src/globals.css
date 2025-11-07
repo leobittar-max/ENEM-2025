@@ -4,30 +4,30 @@
 
 @layer base {
   :root {
-    /* Android-like palette */
-    --background: 0 0% 100%;
-    --foreground: 210 11% 15%;
+    /* Tema claro - Android-like */
+    --background: 210 20% 99%;
+    --foreground: 210 15% 15%;
 
     --primary: 227 100% 46%; /* #2962FF */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 174 72% 52%; /* #03DAC6 */
-    --secondary-foreground: 210 11% 15%;
+    --secondary-foreground: 210 15% 15%;
 
-    --muted: 210 20% 97%;
-    --muted-foreground: 215 15% 45%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 15% 40%;
 
     --accent: 227 100% 46%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 55%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 11% 15%;
+    --card-foreground: 210 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 11% 15%;
+    --popover-foreground: 210 15% 15%;
 
     --border: 210 18% 90%;
     --input: 210 18% 90%;
@@ -36,54 +36,53 @@
     --radius: 0.75rem;
 
     --sidebar-background: 210 20% 98%;
-    --sidebar-foreground: 210 11% 15%;
+    --sidebar-foreground: 210 15% 15%;
     --sidebar-primary: 227 100% 46%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 210 20% 97%;
-    --sidebar-accent-foreground: 210 11% 15%;
+    --sidebar-accent-foreground: 210 15% 15%;
     --sidebar-border: 210 18% 90%;
     --sidebar-ring: 227 100% 46%;
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --background: 222 27% 10%;
-      --foreground: 210 40% 98%;
+  .dark {
+    /* Tema escuro - alto contraste e leitura confortável */
+    --background: 222 22% 9%;
+    --foreground: 210 40% 98%;
 
-      --card: 222 27% 12%;
-      --card-foreground: 210 40% 98%;
+    --card: 222 24% 13%;
+    --card-foreground: 210 40% 98%;
 
-      --popover: 222 27% 12%;
-      --popover-foreground: 210 40% 98%;
+    --popover: 222 24% 13%;
+    --popover-foreground: 210 40% 98%;
 
-      --primary: 227 100% 65%;
-      --primary-foreground: 222 27% 10%;
+    --primary: 227 100% 65%;
+    --primary-foreground: 222 22% 9%;
 
-      --secondary: 174 72% 52%;
-      --secondary-foreground: 222 27% 10%;
+    --secondary: 174 72% 52%;
+    --secondary-foreground: 222 22% 9%;
 
-      --muted: 222 18% 16%;
-      --muted-foreground: 215 20% 75%;
+    --muted: 222 16% 18%;
+    --muted-foreground: 215 18% 78%;
 
-      --accent: 227 100% 65%;
-      --accent-foreground: 222 27% 10%;
+    --accent: 227 100% 65%;
+    --accent-foreground: 222 22% 9%;
 
-      --destructive: 0 72% 55%;
-      --destructive-foreground: 0 0% 100%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-      --border: 222 18% 22%;
-      --input: 222 18% 22%;
-      --ring: 227 100% 65%;
+    --border: 222 16% 26%;
+    --input: 222 16% 26%;
+    --ring: 227 100% 65%;
 
-      --sidebar-background: 222 27% 10%;
-      --sidebar-foreground: 210 40% 98%;
-      --sidebar-primary: 227 100% 65%;
-      --sidebar-primary-foreground: 222 27% 10%;
-      --sidebar-accent: 222 27% 14%;
-      --sidebar-accent-foreground: 210 40% 98%;
-      --sidebar-border: 222 18% 22%;
-      --sidebar-ring: 227 100% 65%;
-    }
+    --sidebar-background: 222 22% 9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 227 100% 65%;
+    --sidebar-primary-foreground: 222 22% 9%;
+    --sidebar-accent: 222 24% 14%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 222 16% 26%;
+    --sidebar-ring: 227 100% 65%;
   }
 }
 
@@ -105,7 +104,6 @@
     overflow-x: hidden;
   }
 
-  /* Form elements: boa visibilidade, 48px tocáveis */
   input,
   textarea,
   select {
@@ -135,17 +133,17 @@
   overflow-x: hidden;
 }
 
-/* Cards padrão Android-like */
+/* Cards */
 .card-elevated {
   @apply rounded-2xl bg-card shadow-sm border border-border/80 px-4 py-3;
 }
 
-/* Touch targets mínimos */
+/* Touch targets */
 .touch-target {
   min-height: 48px;
 }
 
-/* TabBar Android-like */
+/* TabBar */
 .tabbar-scroll {
   @apply flex gap-2 overflow-x-auto no-x-overflow;
 }
@@ -157,7 +155,6 @@
 }
 
 .tab-item-active {
-  /* bg-primary/10 é válido e gera fundo suave para aba ativa */
   @apply text-primary font-semibold bg-primary/10 relative;
 }
 
@@ -166,7 +163,7 @@
   @apply absolute left-4 right-4 bottom-1 h-[3px] rounded-full bg-primary;
 }
 
-/* Checklist linha densa */
+/* Checklist */
 .checklist-item {
   @apply flex items-center gap-3 rounded-2xl bg-card border border-border px-3 py-3 shadow-sm;
 }

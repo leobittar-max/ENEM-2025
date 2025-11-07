@@ -64,7 +64,6 @@ const Index = () => {
     <div
       className={cn(
         "min-h-screen w-full bg-background text-foreground no-x-overflow",
-        theme === "dark" && "dark",
       )}
     >
       <SetupModal open={!coordinator} onSubmit={initializeCoordinator} />
@@ -116,7 +115,7 @@ const Index = () => {
 
           {/* Main area */}
           <div className="flex-1 flex flex-col app-safe-area">
-            {/* AppBar: mobile-first, compacta, fixa, some no histórico */}
+            {/* AppBar */}
             {!showHistory && (
               <header className="sticky top-0 z-30 bg-card shadow-sm border-b border-border px-4 pt-2 pb-2 flex items-center gap-3">
                 <button
@@ -157,7 +156,7 @@ const Index = () => {
               </header>
             )}
 
-            {/* TabBar Android-like abaixo da AppBar, exceto no histórico */}
+            {/* TabBar Android-like */}
             {!showHistory && (
               <nav className="bg-card px-2 pb-2 pt-1 border-b border-border">
                 <div className="tabbar-scroll">
@@ -195,7 +194,7 @@ const Index = () => {
               </nav>
             )}
 
-            {/* Conteúdo central: histórico ou abas */}
+            {/* Conteúdo central */}
             <main className="flex-1 px-4 pt-2 pb-3 md:px-6 space-y-3 no-x-overflow">
               {showHistory ? (
                 <LogPanel log={state.log} />
@@ -261,7 +260,7 @@ const Index = () => {
               )}
             </main>
 
-            {/* Ações principais no rodapé mobile (Relatório / Sair) */}
+            {/* Rodapé mobile */}
             {!showHistory && (
               <div className="px-4 pb-2 pt-1 flex gap-2 md:hidden bg-background border-t border-border">
                 <Button
@@ -299,10 +298,7 @@ interface TabItemProps {
 const TabItem = ({ label, icon, active, onClick }: TabItemProps) => (
   <button
     onClick={onClick}
-    className={cn(
-      "tab-item",
-      active && "tab-item-active",
-    )}
+    className={cn("tab-item", active && "tab-item-active")}
     aria-label={`Ir para aba ${label}`}
   >
     <span className="text-base">{icon}</span>
