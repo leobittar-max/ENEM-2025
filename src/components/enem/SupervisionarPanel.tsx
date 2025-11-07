@@ -8,13 +8,6 @@ interface Room {
   name: string | null;
 }
 
-interface ChecklistItem {
-  id: string;
-  titulo: string;
-  bloco: string;
-  order_index: number;
-}
-
 interface ChecklistStatusRow {
   item_id: string;
   checked: boolean;
@@ -32,8 +25,10 @@ interface RoomWithProgress {
 interface Responsible {
   id: string;
   name: string;
+  document?: string | null;
   role: "chefe" | "aplicador";
   roomId: string;
+  functionName?: string | null;
 }
 
 interface SupervisionarPanelProps {
@@ -42,18 +37,15 @@ interface SupervisionarPanelProps {
 
 /**
  * Painel de supervisão do Coordenador:
- * - Mostra todas as salas cadastradas.
- * - Exibe barra de progresso do checklist de Chefe de Sala (dados Supabase).
- * - Ao clicar em uma sala, mostra:
- *    - Lista compacta dos responsáveis (chefe e aplicadores) com checkboxes de presença.
- *    - Lista compacta do checklist (itens concluídos/pendentes) com ícones.
+ * - Mostra todas as salas com barra de progresso do checklist do Chefe de Sala (dados Supabase).
+ * - Ao clicar em uma sala:
+ *    - Exibe uma visão compacta dos responsáveis: Chefe(s) e Aplicadores/Auxiliares.
+ *    - Permite marcar presença de cada responsável com um checkbox.
  * - Apenas uma sala pode estar "aberta" por vez.
- * - Tudo é somente leitura de checklists; presença é controlada pelo Coordenador.
+ * - Checklist não é exibido aqui; apenas o progresso agregado.
  */
 export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   const [rooms, setRooms] = useState<RoomWithProgress[]>([]);
-  const [items, setItems] = useState<ChecklistItem[]>([]);
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [roomItemsStatus, setRoomItemsStatus] = useState<
     Record<string, ChecklistStatusRow[]>
   >({});
@@ -63,11 +55,13 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   const [attendanceByMember, setAttendanceByMember] = useState<
     Record<string, boolean>
   >({});
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [totalChecklistItems, setTotalChecklistItems] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const today = useMemo(() => getTodayISO(), []);
 
-  // Carregar salas, checklist, responsáveis e presença inicial
+  // Carregar salas, checklist (para progresso), responsáveis e presença inicial
   useEffect(() => {
     let active = true;
 
@@ -85,12 +79,11 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         return;
       }
 
-      // 2) Itens de checklist (Chefe de Sala)
+      // 2) Total de itens de checklist para Chefe de Sala (para cálculo de %)
       const { data: itemsData, error: itemsError } = await supabase
         .from("checklist_items")
-        .select("id, bloco, titulo, order_index")
-        .eq("role", "chefe_sala")
-        .order("order_index", { ascending: true });
+        .select("id")
+        .eq("role", "chefe_sala");
 
       if (itemsError || !itemsData || itemsData.length === 0) {
         if (active) resetState();
@@ -98,8 +91,9 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
       }
 
       const total = itemsData.length;
+      setTotalChecklistItems(total);
 
-      // 3) Status de hoje (para progresso)
+      // 3) Status de hoje (para progresso inicial)
       const { data: statusData, error: statusError } = await supabase
         .from("checklist_status")
         .select("room_id, item_id, checked")
@@ -107,8 +101,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
 
       if (statusError || !statusData) {
         if (active) {
-          initRoomsOnly(roomsData, itemsData, total);
-          setLoading(false);
+          resetState();
         }
         return;
       }
@@ -116,25 +109,23 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
       // 4) Responsáveis: chefes de sala
       const { data: chiefsData, error: chiefsError } = await supabase
         .from("room_chiefs")
-        .select("id, name, room_id, active");
+        .select("id, name, room_id, active, access_token");
 
       if (chiefsError) {
         if (active) {
-          initRoomsOnly(roomsData, itemsData, total);
-          setLoading(false);
+          resetState();
         }
         return;
       }
 
-      // 5) Responsáveis: aplicadores (team_members vinculados à sala)
+      // 5) Responsáveis: aplicadores/auxiliares (team_members vinculados à sala)
       const { data: teamData, error: teamError } = await supabase
         .from("team_members")
-        .select("id, role_group, function_name, name, room_code");
+        .select("id, role_group, function_name, name, cpf, room_code");
 
       if (teamError) {
         if (active) {
-          initRoomsOnly(roomsData, itemsData, total);
-          setLoading(false);
+          resetState();
         }
         return;
       }
@@ -149,10 +140,10 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
       if (!active) return;
 
       if (attendanceError) {
-        // Se der erro, seguimos sem travar o painel; presenças iniciam vazias
+        // Se falhar, apenas não pré-carregamos presença
       }
 
-      // Mapa checklist_status por sala
+      // Mapa status por sala
       const statusMap: Record<string, ChecklistStatusRow[]> = {};
       (statusData || []).forEach((row: any) => {
         if (!statusMap[row.room_id]) statusMap[row.room_id] = [];
@@ -162,9 +153,8 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         });
       });
 
-      // Mapa de responsáveis por sala
+      // Mapa responsáveis por sala
       const responsiblesMap: Record<string, Responsible[]> = {};
-
       roomsData.forEach((room: Room) => {
         responsiblesMap[room.id] = [];
       });
@@ -177,13 +167,14 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         responsiblesMap[chief.room_id].push({
           id: chief.id,
           name: chief.name,
+          document: null,
           role: "chefe",
           roomId: chief.room_id,
         });
       });
 
       (teamData || []).forEach((member: any) => {
-        if (member.role_group !== "sala" || !member.room_code) return;
+        if (!member.room_code) return;
         const room = roomsData.find(
           (r: any) => r.code === member.room_code,
         );
@@ -194,12 +185,14 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         responsiblesMap[room.id].push({
           id: member.id,
           name: member.name,
+          document: member.cpf,
           role: "aplicador",
           roomId: room.id,
+          functionName: member.function_name,
         });
       });
 
-      // Mapa de presença por responsável (team_attendance -> present)
+      // Mapa presença por responsável
       const attendanceMap: Record<string, boolean> = {};
       (attendanceData || []).forEach((row: any) => {
         attendanceMap[row.member_id] = !!row.present;
@@ -222,9 +215,8 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         };
       });
 
-      setRoomItemsStatus(statusMap);
-      setItems(itemsData as ChecklistItem[]);
       setRooms(roomList);
+      setRoomItemsStatus(statusMap);
       setResponsiblesByRoom(responsiblesMap);
       setAttendanceByMember(attendanceMap);
       setLoading(false);
@@ -232,28 +224,11 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
 
     function resetState() {
       setRooms([]);
-      setItems([]);
       setRoomItemsStatus({});
       setResponsiblesByRoom({});
       setAttendanceByMember({});
+      setTotalChecklistItems(0);
       setLoading(false);
-    }
-
-    function initRoomsOnly(
-      roomsData: any[],
-      itemsData: any[],
-      total: number,
-    ) {
-      const list: RoomWithProgress[] = roomsData.map((room: any) => ({
-        id: room.id,
-        label: room.name || room.code,
-        code: room.code,
-        completed: 0,
-        total,
-        percent: 0,
-      }));
-      setRooms(list);
-      setItems(itemsData as ChecklistItem[]);
     }
 
     loadInitial();
@@ -263,9 +238,9 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
     };
   }, [today]);
 
-  // Realtime: atualiza apenas progresso do checklist (responsáveis e presença ficam estáveis o suficiente)
+  // Realtime: atualiza progresso com base em checklist_status (sem mostrar itens)
   useEffect(() => {
-    if (!items.length) return;
+    if (!totalChecklistItems) return;
 
     const channel = supabase
       .channel("supervision-room-status")
@@ -282,7 +257,6 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
           const oldRow: any = payload.old;
           const roomId: string = newRow?.room_id ?? oldRow?.room_id;
           if (!roomId) return;
-
           await reloadRoomStatus(roomId);
         },
       )
@@ -292,7 +266,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, today]);
+  }, [totalChecklistItems, today]);
 
   async function reloadRoomStatus(roomId: string) {
     const { data: statusData, error: statusError } = await supabase
@@ -316,17 +290,19 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
     }));
 
     setRooms((prev) => {
-      const total = items.length || 0;
+      if (!totalChecklistItems) return prev;
+
       const completed = statuses.filter((s) => s.checked).length;
-      const percent =
-        total > 0 ? Math.round((completed / total) * 100) : 0;
+      const percent = Math.round(
+        (completed / totalChecklistItems) * 100,
+      );
 
       return prev.map((room) =>
         room.id === roomId
           ? {
               ...room,
               completed,
-              total,
+              total: totalChecklistItems,
               percent,
             }
           : room,
@@ -334,23 +310,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
     });
   }
 
-  const selectedRoom = rooms.find((r) => r.id === selectedRoomId) || null;
-  const selectedRoomStatus = selectedRoomId
-    ? roomItemsStatus[selectedRoomId] || []
-    : [];
-
-  const selectedChecklistItems = useMemo(() => {
-    if (!selectedRoomId) return [];
-    const statusMap = new Map(
-      selectedRoomStatus.map((s) => [s.item_id, s.checked]),
-    );
-    return items.map((item) => ({
-      ...item,
-      checked: statusMap.get(item.id) || false,
-    }));
-  }, [items, selectedRoomId, selectedRoomStatus]);
-
-  const selectedResponsibles =
+  const selectedRoomResponsibles =
     (selectedRoomId && responsiblesByRoom[selectedRoomId]) || [];
 
   return (
@@ -362,17 +322,17 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         </div>
         <div className="space-y-0.5">
           <div className="text-xs font-semibold">
-            Supervisionar Chefes de Sala
+            Supervisionar Salas
           </div>
           <p className="text-[10px] text-muted-foreground">
-            Veja rapidamente quais salas estão avançando, quem são os
-            responsáveis e quais itens do checklist já foram cumpridos,
-            em uma visão compacta e somente leitura.
+            Acompanhe, em tempo real, o progresso dos checklists dos Chefes de
+            Sala e a presença dos responsáveis em cada sala, em uma visão
+            compacta e clara.
           </p>
         </div>
       </div>
 
-      {/* Visão geral das salas */}
+      {/* Lista de salas + progresso + responsáveis compactos */}
       <div className="card-elevated space-y-1.5">
         <div className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">
           Progresso das salas
@@ -403,14 +363,22 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
                     setSelectedRoomId(isSelected ? null : room.id)
                   }
                 >
+                  {/* Linha principal: número/nome da sala + progresso */}
                   <div className="flex items-center gap-2 text-[9px]">
                     <div className="font-semibold truncate">
-                      Sala {room.label}
+                      Sala {room.code}
+                      {room.label !== room.code && (
+                        <span className="ml-1 text-[8px] text-muted-foreground">
+                          · {room.label}
+                        </span>
+                      )}
                     </div>
                     <div className="ml-auto text-muted-foreground">
                       {room.completed}/{room.total} · {room.percent}%
                     </div>
                   </div>
+
+                  {/* Barra de progresso conectada ao checklist do Chefe de Sala */}
                   <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                     <div
                       className={cn(
@@ -425,16 +393,14 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
                     />
                   </div>
 
+                  {/* Detalhes da sala: apenas quando selecionada */}
                   {isSelected && (
-                    <div className="mt-1.5 border-t border-border/60 pt-1.5 space-y-1.5">
+                    <div className="mt-1.5 border-t border-border/60 pt-1.5">
                       <ResponsiblesCompactList
                         roomId={room.id}
-                        responsibles={selectedResponsibles}
+                        responsibles={selectedRoomResponsibles}
                         attendanceByMember={attendanceByMember}
                         onTogglePresence={handleTogglePresence}
-                      />
-                      <RoomCompactChecklist
-                        items={selectedChecklistItems}
                       />
                     </div>
                   )}
@@ -504,109 +470,89 @@ function ResponsiblesCompactList({
     );
   }
 
+  const chiefs = roomResponsibles.filter((r) => r.role === "chefe");
+  const aplicadores = roomResponsibles.filter(
+    (r) => r.role === "aplicador",
+  );
+
   return (
-    <div className="space-y-0.5">
+    <div className="space-y-0.75">
       <div className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wide">
         Responsáveis na sala
       </div>
-      <div className="flex flex-wrap gap-1.5">
-        {roomResponsibles.map((resp) => {
-          const present = !!attendanceByMember[resp.id];
-          return (
-            <label
-              key={resp.id}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-[7px] cursor-pointer select-none",
-                present
-                  ? "bg-emerald-50 border-emerald-400 text-emerald-700"
-                  : "bg-muted border-border text-muted-foreground",
-              )}
-            >
-              <input
-                type="checkbox"
-                className="h-2.5 w-2.5 rounded-sm border border-border accent-emerald-500"
-                checked={present}
-                onChange={(e) =>
-                  onTogglePresence(resp.id, e.target.checked)
-                }
-              />
-              <span className="font-semibold">
-                {resp.role === "chefe" ? "Chefe" : "Aplicador"}
-              </span>
-              <span className="truncate max-w-[96px]">
-                {resp.name}
-              </span>
-            </label>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
-function RoomCompactChecklist({
-  items,
-}: {
-  items: (ChecklistItem & { checked: boolean })[];
-}) {
-  if (!items.length) {
-    return (
-      <div className="text-[8px] text-muted-foreground">
-        Nenhum item de checklist configurado para Chefes de Sala.
-      </div>
-    );
-  }
-
-  const grouped: Record<string, (ChecklistItem & { checked: boolean })[]> =
-    {};
-  items.forEach((item) => {
-    if (!grouped[item.bloco]) grouped[item.bloco] = [];
-    grouped[item.bloco].push(item);
-  });
-
-  return (
-    <div className="space-y-1">
-      <div className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wide">
-        Checklist da sala (resumo)
-      </div>
-      {Object.entries(grouped).map(([bloco, blocoItens]) => (
-        <div key={bloco} className="space-y-0.25">
-          <div className="text-[7px] font-semibold text-muted-foreground/80">
-            {bloco}
-          </div>
-          {blocoItens.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-1.5 text-[7px]"
-            >
-              <span
+      {/* Chefes de sala */}
+      {chiefs.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {chiefs.map((resp) => {
+            const present = !!attendanceByMember[resp.id];
+            return (
+              <label
+                key={resp.id}
                 className={cn(
-                  "inline-flex h-3 w-3 items-center justify-center rounded-full border flex-shrink-0",
-                  item.checked
-                    ? "bg-emerald-500 border-emerald-600"
-                    : "bg-red-50 border-red-300",
+                  "inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-[7px] cursor-pointer select-none",
+                  present
+                    ? "bg-emerald-50 border-emerald-400 text-emerald-700"
+                    : "bg-muted border-border text-muted-foreground",
                 )}
               >
-                {item.checked ? (
-                  <span className="text-[7px] text-white">✓</span>
-                ) : (
-                  <span className="text-[7px] text-red-500">!</span>
-                )}
-              </span>
-              <span
-                className={cn(
-                  "truncate",
-                  item.checked
-                    ? "text-emerald-700"
-                    : "text-muted-foreground",
-                )}
-              >
-                {item.id} · {item.titulo}
-              </span>
-            </div>
-          ))}
+                <input
+                  type="checkbox"
+                  className="h-2.5 w-2.5 rounded-sm border border-border accent-emerald-500"
+                  checked={present}
+                  onChange={(e) =>
+                    onTogglePresence(resp.id, e.target.checked)
+                  }
+                />
+                <span className="font-semibold">Chefe</span>
+                <span className="truncate max-w-[96px]">
+                  {resp.name}
+                </span>
+              </label>
+            );
+          })}
         </div>
-      ))}
+      )}
+
+      {/* Aplicadores / auxiliares */}
+      {aplicadores.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {aplicadores.map((resp) => {
+            const present = !!attendanceByMember[resp.id];
+            return (
+              <label
+                key={resp.id}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-[7px] cursor-pointer select-none",
+                  present
+                    ? "bg-emerald-50 border-emerald-300 text-emerald-700"
+                    : "bg-muted border-border text-muted-foreground",
+                )}
+              >
+                <input
+                  type="checkbox"
+                  className="h-2.5 w-2.5 rounded-sm border border-border accent-emerald-500"
+                  checked={present}
+                  onChange={(e) =>
+                    onTogglePresence(resp.id, e.target.checked)
+                  }
+                />
+                <span className="font-semibold">
+                  {resp.functionName || "Aplicador"}
+                </span>
+                <span className="truncate max-w-[96px]">
+                  {resp.name}
+                </span>
+                {resp.document && (
+                  <span className="text-[6px] text-muted-foreground">
+                    · {resp.document}
+                  </span>
+                )}
+              </label>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
