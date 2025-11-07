@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  showSuccess,
-  showError,
-} from "@/utils/toast";
+import { showSuccess, showError } from "@/utils/toast";
 import { generateFullPdfReport } from "@/utils/report-pdf";
 
 export type EnemNotificationType =
@@ -94,7 +91,8 @@ const STORAGE_KEY = "enem2025_state_v2";
 const STORAGE_THEME_KEY = "enem2025_theme_v1";
 const STORAGE_TAB_KEY = "enem2025_tab_v1";
 
-// Checklist base (trecho resumido; conteúdo original mantido)
+// Checklist base simplificado porém completo o suficiente para o fluxo.
+// (Pode ser expandido depois mantendo a mesma estrutura.)
 const checklistItemsBase: ChecklistItem[] = [
   {
     id: "prep-01",
@@ -109,7 +107,48 @@ const checklistItemsBase: ChecklistItem[] = [
     },
     critical: true,
   },
-  // ...demais itens exatamente como já estavam definidos
+  {
+    id: "prep-02",
+    phase: "preparation",
+    text: "Verificar condições de funcionamento das salas (lâmpadas, quadro, ventilação)",
+    role: "Coordenador",
+    critical: true,
+  },
+  {
+    id: "prep-03",
+    phase: "preparation",
+    text: "Validar acessibilidade das salas destinadas aos participantes com atendimento especializado",
+    role: "Coordenador",
+    critical: true,
+  },
+  {
+    id: "morning-01",
+    phase: "morning",
+    text: "Confirmar abertura dos portões no horário previsto",
+    role: "Coordenador",
+    suggestedTime: "12:00",
+    critical: true,
+  },
+  {
+    id: "morning-02",
+    phase: "morning",
+    text: "Orientar equipe de portão sobre conferência de documentos e materiais proibidos",
+    role: "Coordenador",
+    suggestedTime: "12:10",
+  },
+  {
+    id: "closing-01",
+    phase: "closing",
+    text: "Conferir lacres e malotes das provas de todas as salas",
+    role: "Coordenador",
+    critical: true,
+  },
+  {
+    id: "closing-02",
+    phase: "closing",
+    text: "Registrar no sistema da Aplicadora o encerramento do local",
+    role: "Coordenador",
+  },
 ];
 
 const preparationItems = checklistItemsBase.filter(
@@ -188,7 +227,6 @@ function safeLoadTab(): TabId {
   return stored || "preparation";
 }
 
-// Helpers de data (mantidos)
 function getSaoPauloDate(now: Date) {
   const iso = now.toLocaleString("en-CA", {
     timeZone: "America/Sao_Paulo",
@@ -207,12 +245,12 @@ function getSaoPauloDate(now: Date) {
 
 function buildCurrentStage(now: Date): string {
   const { year, month, day } = getSaoPauloDate(now);
-  const hour = now.toLocaleString("pt-BR", {
+  const hourStr = now.toLocaleString("pt-BR", {
     timeZone: "America/Sao_Paulo",
     hour: "2-digit",
     hour12: false,
   });
-  const h = Number(hour);
+  const h = Number(hourStr);
 
   if (year < 2025) return "Preparação";
   if (year > 2025) return "Evento encerrado";
@@ -306,9 +344,7 @@ export function useEnem2025() {
         };
   }, [coordinator]);
 
-  const currentStage = useMemo(() => {
-    return buildCurrentStage(now);
-  }, [now]);
+  const currentStage = useMemo(() => buildCurrentStage(now), [now]);
 
   const examTimeRemaining = useMemo(() => {
     if (!currentTimes) return "--:--:--";
@@ -324,7 +360,7 @@ export function useEnem2025() {
     )}:${String(s).padStart(2, "0")}`;
   }, [now, currentTimes]);
 
-  // Alertas automáticos (mantidos)
+  // Alertas automáticos
   useEffect(() => {
     if (!coordinator || !currentTimes) return;
 
@@ -394,8 +430,6 @@ export function useEnem2025() {
     }));
   }
 
-  // Ações públicas
-
   function initializeCoordinator(payload: CoordinatorData) {
     setState((prev) => ({
       ...prev,
@@ -444,25 +478,22 @@ export function useEnem2025() {
             ? "operational"
             : "closing";
         const entryName = `[Checklist] ${item.text}`;
-        const updatedLog: LogEntry[] = [
-          {
-            id: Date.now(),
-            name: entryName,
-            category,
-            status: "completed",
-            timestamp: new Date().toLocaleString("pt-BR", {
-              timeZone: "America/Sao_Paulo",
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            }),
-          },
-          ...prev.log,
-        ];
+        const entry: LogEntry = {
+          id: Date.now(),
+          name: entryName,
+          category,
+          status: "completed",
+          timestamp: new Date().toLocaleString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }),
+        };
         return {
           ...prev,
           [list]: nextList,
-          log: updatedLog,
+          log: [entry, ...prev.log],
         };
       }
 
@@ -527,7 +558,7 @@ export function useEnem2025() {
     if (data.critical) {
       showError(`Ocorrência crítica registrada: ${data.type}`);
     } else {
-      showSuccess("Ocorrência registrado.");
+      showSuccess("Ocorrência registrada.");
     }
   }
 

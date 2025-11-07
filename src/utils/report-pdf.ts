@@ -21,6 +21,15 @@ interface GeneratePdfReportParams {
   log: LogEntry[];
 }
 
+interface RoomWithProgress {
+  id: string;
+  code: string;
+  label: string;
+  completed: number;
+  total: number;
+  percent: number;
+}
+
 /**
  * Gera um PDF completo com:
  * - Dados do coordenador/local
@@ -269,7 +278,6 @@ export async function generateFullPdfReport({
     });
     cursorY = (doc as any).lastAutoTable.finalY + 4;
 
-    // Pequena descrição opcional completa logo abaixo
     const detailStartIdx = 0;
     const detailEndIdx = Math.min(occurrences.length, 12);
     const slice = occurrences.slice(detailStartIdx, detailEndIdx);
@@ -294,7 +302,7 @@ export async function generateFullPdfReport({
   if (!log.length) {
     addText("Não houve registros no histórico interno para este período.");
   } else {
-    const limitedLog = log.slice(0, 150); // Mantém compacto
+    const limitedLog = log.slice(0, 150);
     const logRows = limitedLog.map((e, idx) => [
       String(idx + 1),
       mapLogCategory(e.category),
@@ -333,7 +341,6 @@ export async function generateFullPdfReport({
     }
   }
 
-  // Rodapé simples em todas as páginas
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
