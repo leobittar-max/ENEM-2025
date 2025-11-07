@@ -9,7 +9,6 @@ import { ClosingTab } from "@/components/enem/ClosingTab";
 import { ReportTab } from "@/components/enem/ReportTab";
 import { LogPanel } from "@/components/enem/LogPanel";
 import { SupervisionarPanel } from "@/components/enem/SupervisionarPanel";
-import { TeamPresencePanel } from "@/components/enem/TeamPresencePanel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MadeWithDyad } from "@/components/made-with-dyad";
@@ -41,7 +40,6 @@ const Index = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [showSupervision, setShowSupervision] = useState(false);
 
-  // Controle do popup de sala 100%
   const [completionDialog, setCompletionDialog] = useState<{
     open: boolean;
     roomLabel: string;
@@ -76,11 +74,9 @@ const Index = () => {
     setSidebarOpen(false);
   };
 
-  // Hook de progresso em tempo real: apenas se coordenador já configurado
   useRoomProgressRealtime({
     onItemCompleted: (room: RoomProgress) => {
       if (!coordinator) return;
-      // Toast discreto avisando atividade concluída na sala
       toast.success(
         `Sala ${room.roomLabel} avançou no checklist (${room.completed}/${room.total}).`,
         {
@@ -90,7 +86,6 @@ const Index = () => {
     },
     onRoomCompleted: (room: RoomProgress) => {
       if (!coordinator) return;
-      // Popup chamativo quando sala atinge 100%
       setCompletionDialog({
         open: true,
         roomLabel: room.roomLabel,
@@ -139,7 +134,7 @@ const Index = () => {
             />
           </div>
 
-          {/* Sidebar mobile overlay */}
+          {/* Sidebar mobile */}
           {sidebarOpen && (
             <div className="fixed inset-0 z-40 flex md:hidden">
               <div className="h-full w-72 bg-sidebar-background shadow-xl">
@@ -170,7 +165,7 @@ const Index = () => {
             </div>
           )}
 
-          {/* Main area */}
+          {/* Main */}
           <div className="flex-1 flex flex-col app-safe-area">
             {/* AppBar */}
             {!showHistory && !showSupervision && (
@@ -213,7 +208,7 @@ const Index = () => {
               </header>
             )}
 
-            {/* TabBar principal */}
+            {/* Tabs */}
             {!showHistory && !showSupervision && (
               <nav className="bg-card px-2 pb-2 pt-1 border-b border-border">
                 <div className="tabbar-scroll">
@@ -251,7 +246,7 @@ const Index = () => {
               </nav>
             )}
 
-            {/* Conteúdo central */}
+            {/* Conteúdo */}
             <main className="flex-1 px-4 pt-2 pb-3 md:px-6 space-y-3 no-x-overflow">
               {showHistory ? (
                 <LogPanel log={state.log} />
@@ -311,9 +306,6 @@ const Index = () => {
                       onReset={resetAll}
                     />
                   )}
-
-                  {/* Painel de presença da equipe logo abaixo do conteúdo principal */}
-                  <TeamPresencePanel />
 
                   <div className="pt-2">
                     <MadeWithDyad />
