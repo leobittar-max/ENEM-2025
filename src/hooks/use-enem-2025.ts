@@ -81,7 +81,7 @@ const STORAGE_KEY = "enem2025_state_v1";
 const STORAGE_THEME_KEY = "enem2025_theme_v1";
 const STORAGE_TAB_KEY = "enem2025_tab_v1";
 
-// Mapeia o JSON fornecido (simplificado aqui como constantes)
+// Checklists base (alinhados ao JSON, simplificado aqui)
 const checklistItemsBase: ChecklistItem[] = [
   // Preparação Prévia
   {
@@ -285,7 +285,7 @@ const checklistItemsBase: ChecklistItem[] = [
       fonte: { manual: "Coordenador", pagina: 20 },
     },
   },
-  // Manhã (pré-portões) e Portões/Malotes
+  // Manhã
   {
     id: "manha-01",
     phase: "morning",
@@ -356,7 +356,7 @@ const checklistItemsBase: ChecklistItem[] = [
     },
     critical: true,
   },
-  // Durante a Prova (exec-*)
+  // Durante
   {
     id: "exec-01",
     phase: "during",
@@ -536,7 +536,7 @@ const checklistItemsBase: ChecklistItem[] = [
       fonte: { manual: "Coordenador", pagina: 11 },
     },
   },
-  // Encerramento (enc-*)
+  // Encerramento
   {
     id: "enc-01",
     phase: "closing",
@@ -828,7 +828,7 @@ export function useEnem2025() {
     ).padStart(2, "0")}`;
   }, [now, currentTimes]);
 
-  // Alertas automáticos (mantidos)
+  // Alertas automáticos
   useEffect(() => {
     if (!state.coordinator || !currentTimes) return;
 
@@ -866,7 +866,10 @@ export function useEnem2025() {
       const target = parseTimeToToday(cfg.time);
       const diffMinutes = (target.getTime() - now.getTime()) / 60000;
 
-      if (diffMinutes <= cfg.minutesBefore && diffMinutes > cfg.minutesBefore - 1.2) {
+      if (
+        diffMinutes <= cfg.minutesBefore &&
+        diffMinutes > cfg.minutesBefore - 1.2
+      ) {
         setFiredAlerts((prev) => ({ ...prev, [key]: true }));
         showSuccess(cfg.message);
       }
