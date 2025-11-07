@@ -37,12 +37,11 @@ interface SupervisionarPanelProps {
 
 /**
  * Painel de supervisão do Coordenador:
- * - Mostra todas as salas com barra de progresso do checklist do Chefe de Sala (dados Supabase).
- * - Ao clicar em uma sala:
- *    - Exibe uma visão compacta dos responsáveis: Chefe(s) e Aplicadores/Auxiliares.
- *    - Permite marcar presença de cada responsável com um checkbox.
- * - Apenas uma sala pode estar "aberta" por vez.
- * - Checklist não é exibido aqui; apenas o progresso agregado.
+ * - Lista salas com barra de progresso (baseada no checklist do Chefe de Sala).
+ * - Ao expandir uma sala:
+ *    - Mostra cabeçalho compacto com identificação e porcentagem.
+ *    - Mostra responsáveis em chips modernos, com checkbox de presença.
+ * - Apenas uma sala aberta por vez.
  */
 export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   const [rooms, setRooms] = useState<RoomWithProgress[]>([]);
@@ -61,14 +60,14 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
 
   const today = useMemo(() => getTodayISO(), []);
 
-  // Carregar salas, checklist (para progresso), responsáveis e presença inicial
+  // Carrega salas, responsáveis e progresso
   useEffect(() => {
     let active = true;
 
     async function loadInitial() {
       setLoading(true);
 
-      // 1) Salas
+      // Salas
       const { data: roomsData, error: roomsError } = await supabase
         .from("rooms")
         .select("id, code, name")
@@ -79,7 +78,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         return;
       }
 
-      // 2) Total de itens de checklist para Chefe de Sala (para cálculo de %)
+      // Total de itens do checklist (Chefe de Sala)
       const { data: itemsData, error: itemsError } = await supabase
         .from("checklist_items")
         .select("id")
@@ -93,57 +92,46 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
       const total = itemsData.length;
       setTotalChecklistItems(total);
 
-      // 3) Status de hoje (para progresso inicial)
+      // Status de hoje (para progresso)
       const { data: statusData, error: statusError } = await supabase
         .from("checklist_status")
         .select("room_id, item_id, checked")
         .eq("date", today);
 
       if (statusError || !statusData) {
-        if (active) {
-          resetState();
-        }
+        if (active) resetState();
         return;
       }
 
-      // 4) Responsáveis: chefes de sala
+      // Chefes de sala
       const { data: chiefsData, error: chiefsError } = await supabase
         .from("room_chiefs")
-        .select("id, name, room_id, active, access_token");
+        .select("id, name, room_id, active");
 
       if (chiefsError) {
-        if (active) {
-          resetState();
-        }
+        if (active) resetState();
         return;
       }
 
-      // 5) Responsáveis: aplicadores/auxiliares (team_members vinculados à sala)
+      // Aplicadores / auxiliares
       const { data: teamData, error: teamError } = await supabase
         .from("team_members")
         .select("id, role_group, function_name, name, cpf, room_code");
 
       if (teamError) {
-        if (active) {
-          resetState();
-        }
+        if (active) resetState();
         return;
       }
 
-      // 6) Presenças atuais (team_attendance) para hoje
-      const { data: attendanceData, error: attendanceError } =
-        await supabase
-          .from("team_attendance")
-          .select("member_id, date, present")
-          .eq("date", today);
+      // Presenças de hoje
+      const { data: attendanceData } = await supabase
+        .from("team_attendance")
+        .select("member_id, date, present")
+        .eq("date", today);
 
       if (!active) return;
 
-      if (attendanceError) {
-        // Se falhar, apenas não pré-carregamos presença
-      }
-
-      // Mapa status por sala
+      // Map status
       const statusMap: Record<string, ChecklistStatusRow[]> = {};
       (statusData || []).forEach((row: any) => {
         if (!statusMap[row.room_id]) statusMap[row.room_id] = [];
@@ -153,7 +141,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         });
       });
 
-      // Mapa responsáveis por sala
+      // Map responsáveis por sala
       const responsiblesMap: Record<string, Responsible[]> = {};
       roomsData.forEach((room: Room) => {
         responsiblesMap[room.id] = [];
@@ -161,15 +149,13 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
 
       (chiefsData || []).forEach((chief: any) => {
         if (!chief.active) return;
-        if (!responsiblesMap[chief.room_id]) {
-          responsiblesMap[chief.room_id] = [];
-        }
-        responsiblesMap[chief.room_id].push({
+        const roomId = chief.room_id;
+        if (!responsiblesMap[roomId]) responsiblesMap[roomId] = [];
+        responsiblesMap[roomId].push({
           id: chief.id,
           name: chief.name,
-          document: null,
           role: "chefe",
-          roomId: chief.room_id,
+          roomId,
         });
       });
 
@@ -179,32 +165,31 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
           (r: any) => r.code === member.room_code,
         );
         if (!room) return;
-        if (!responsiblesMap[room.id]) {
-          responsiblesMap[room.id] = [];
-        }
+        if (!responsiblesMap[room.id]) responsiblesMap[room.id] = [];
         responsiblesMap[room.id].push({
           id: member.id,
           name: member.name,
-          document: member.cpf,
           role: "aplicador",
           roomId: room.id,
           functionName: member.function_name,
+          document: member.cpf,
         });
       });
 
-      // Mapa presença por responsável
+      // Map presença
       const attendanceMap: Record<string, boolean> = {};
       (attendanceData || []).forEach((row: any) => {
         attendanceMap[row.member_id] = !!row.present;
       });
 
-      // Lista final de salas com progresso
+      // Lista de salas com progresso
       const roomList: RoomWithProgress[] = roomsData.map((room: any) => {
         const label = room.name || room.code;
         const statuses = statusMap[room.id] || [];
         const completed = statuses.filter((s) => s.checked).length;
         const percent =
           total > 0 ? Math.round((completed / total) * 100) : 0;
+
         return {
           id: room.id,
           label,
@@ -238,7 +223,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
     };
   }, [today]);
 
-  // Realtime: atualiza progresso com base em checklist_status (sem mostrar itens)
+  // Realtime: atualiza só progresso (checklist_status)
   useEffect(() => {
     if (!totalChecklistItems) return;
 
@@ -291,12 +276,10 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
 
     setRooms((prev) => {
       if (!totalChecklistItems) return prev;
-
       const completed = statuses.filter((s) => s.checked).length;
       const percent = Math.round(
         (completed / totalChecklistItems) * 100,
       );
-
       return prev.map((room) =>
         room.id === roomId
           ? {
@@ -325,14 +308,14 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
             Supervisionar Salas
           </div>
           <p className="text-[10px] text-muted-foreground">
-            Acompanhe, em tempo real, o progresso dos checklists dos Chefes de
-            Sala e a presença dos responsáveis em cada sala, em uma visão
-            compacta e clara.
+            Veja em tempo real o avanço dos checklists dos Chefes de Sala e
+            quem já está presente em cada sala, em uma visão moderna e
+            compacta, ideal para uso no celular.
           </p>
         </div>
       </div>
 
-      {/* Lista de salas + progresso + responsáveis compactos */}
+      {/* Lista de salas */}
       <div className="card-elevated space-y-1.5">
         <div className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">
           Progresso das salas
@@ -350,35 +333,58 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
           <div className="space-y-1.5">
             {rooms.map((room) => {
               const isSelected = room.id === selectedRoomId;
+              const responsibles = responsiblesByRoom[room.id] || [];
+              const presentCount = responsibles.filter(
+                (r) => attendanceByMember[r.id],
+              ).length;
+
               return (
                 <div
                   key={room.id}
                   className={cn(
-                    "rounded-2xl border bg-card px-3 py-2 flex flex-col gap-1.5 cursor-pointer transition-colors",
+                    "rounded-2xl border bg-card px-3 py-2 flex flex-col gap-1.5 transition-colors",
                     isSelected
                       ? "border-primary/70 bg-primary/5 shadow-sm"
-                      : "border-border hover:bg-muted/40",
+                      : "border-border hover:bg-muted/40 cursor-pointer",
                   )}
                   onClick={() =>
-                    setSelectedRoomId(isSelected ? null : room.id)
+                    setSelectedRoomId(
+                      isSelected ? null : room.id,
+                    )
                   }
                 >
-                  {/* Linha principal: número/nome da sala + progresso */}
+                  {/* Linha principal */}
                   <div className="flex items-center gap-2 text-[9px]">
-                    <div className="font-semibold truncate">
-                      Sala {room.code}
-                      {room.label !== room.code && (
-                        <span className="ml-1 text-[8px] text-muted-foreground">
-                          · {room.label}
+                    <div className="flex items-center gap-1 truncate">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary text-[9px] font-bold">
+                        {room.code.replace(/\D/g, "").slice(-2) ||
+                          "S"}
+                      </span>
+                      <div className="flex flex-col leading-tight">
+                        <span className="font-semibold truncate">
+                          Sala {room.code}
                         </span>
-                      )}
+                        {room.label !== room.code && (
+                          <span className="text-[7px] text-muted-foreground truncate">
+                            {room.label}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="ml-auto text-muted-foreground">
-                      {room.completed}/{room.total} · {room.percent}%
+                    <div className="ml-auto flex flex-col items-end gap-0 leading-tight">
+                      <span className="text-[8px] text-muted-foreground">
+                        Checklist
+                      </span>
+                      <span className="text-[9px] font-semibold text-primary">
+                        {room.percent}%{" "}
+                        <span className="text-[7px] text-muted-foreground">
+                          ({room.completed}/{room.total})
+                        </span>
+                      </span>
                     </div>
                   </div>
 
-                  {/* Barra de progresso conectada ao checklist do Chefe de Sala */}
+                  {/* Barra de progresso */}
                   <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                     <div
                       className={cn(
@@ -393,12 +399,33 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
                     />
                   </div>
 
-                  {/* Detalhes da sala: apenas quando selecionada */}
+                  {/* Resumo rápido de responsáveis */}
+                  <div className="flex items-center gap-2 text-[7px] text-muted-foreground">
+                    <span>
+                      Resp.:{" "}
+                      <span className="font-semibold">
+                        {responsibles.length}
+                      </span>
+                    </span>
+                    <span className="text-[6px] text-muted-foreground/80">
+                      {presentCount} presentes
+                    </span>
+                    <span className="ml-auto text-[6px] text-muted-foreground/70">
+                      Toque para ver detalhes
+                    </span>
+                  </div>
+
+                  {/* Detalhe expandido */}
                   {isSelected && (
-                    <div className="mt-1.5 border-t border-border/60 pt-1.5">
-                      <ResponsiblesCompactList
+                    <div className="mt-1.5 rounded-2xl bg-card/95 border border-primary/10 px-2.5 py-2 space-y-1.5">
+                      <RoomDetailHeader
+                        room={room}
+                        total={responsibles.length}
+                        present={presentCount}
+                      />
+                      <ResponsiblesChipsGrid
                         roomId={room.id}
-                        responsibles={selectedRoomResponsibles}
+                        responsibles={responsibles}
                         attendanceByMember={attendanceByMember}
                         onTogglePresence={handleTogglePresence}
                       />
@@ -411,7 +438,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         )}
       </div>
 
-      {/* Botão voltar opcional */}
+      {/* Botão voltar */}
       {onClose && (
         <div className="flex justify-end">
           <button
@@ -447,7 +474,44 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   }
 };
 
-function ResponsiblesCompactList({
+function RoomDetailHeader({
+  room,
+  total,
+  present,
+}: {
+  room: RoomWithProgress;
+  total: number;
+  present: number;
+}) {
+  return (
+    <div className="flex items-center gap-2 text-[7px]">
+      <div className="flex flex-col">
+        <span className="text-[8px] font-semibold text-muted-foreground uppercase tracking-wide">
+          Sala selecionada
+        </span>
+        <span className="text-[9px] font-semibold text-foreground">
+          {room.code}
+          {room.label !== room.code && (
+            <span className="text-[7px] text-muted-foreground">
+              {" "}
+              · {room.label}
+            </span>
+          )}
+        </span>
+      </div>
+      <div className="ml-auto flex flex-col items-end gap-0.5">
+        <span className="text-[7px] text-muted-foreground">
+          Responsáveis presentes
+        </span>
+        <span className="text-[9px] font-semibold text-emerald-600">
+          {present}/{total}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function ResponsiblesChipsGrid({
   roomId,
   responsibles,
   attendanceByMember,
@@ -465,7 +529,7 @@ function ResponsiblesCompactList({
   if (!roomResponsibles.length) {
     return (
       <div className="text-[7px] text-muted-foreground">
-        Nenhum responsável vinculado a esta sala no momento.
+        Nenhum responsável vinculado a esta sala.
       </div>
     );
   }
@@ -476,81 +540,92 @@ function ResponsiblesCompactList({
   );
 
   return (
-    <div className="space-y-0.75">
-      <div className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wide">
-        Responsáveis na sala
-      </div>
-
-      {/* Chefes de sala */}
+    <div className="space-y-1">
+      {/* Chefes */}
       {chiefs.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {chiefs.map((resp) => {
-            const present = !!attendanceByMember[resp.id];
-            return (
-              <label
-                key={resp.id}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-[7px] cursor-pointer select-none",
-                  present
-                    ? "bg-emerald-50 border-emerald-400 text-emerald-700"
-                    : "bg-muted border-border text-muted-foreground",
-                )}
-              >
-                <input
-                  type="checkbox"
-                  className="h-2.5 w-2.5 rounded-sm border border-border accent-emerald-500"
-                  checked={present}
-                  onChange={(e) =>
-                    onTogglePresence(resp.id, e.target.checked)
-                  }
-                />
-                <span className="font-semibold">Chefe</span>
-                <span className="truncate max-w-[96px]">
-                  {resp.name}
-                </span>
-              </label>
-            );
-          })}
+        <div className="space-y-0.25">
+          <div className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wide">
+            Chefes de Sala
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {chiefs.map((resp) => {
+              const present = !!attendanceByMember[resp.id];
+              return (
+                <label
+                  key={resp.id}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[7px] cursor-pointer select-none shadow-xs",
+                    present
+                      ? "bg-emerald-50 border-emerald-400 text-emerald-800"
+                      : "bg-muted border-border text-muted-foreground",
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    className="h-2.5 w-2.5 rounded-sm border border-border accent-emerald-500"
+                    checked={present}
+                    onChange={(e) =>
+                      onTogglePresence(resp.id, e.target.checked)
+                    }
+                  />
+                  <div className="flex flex-col leading-tight">
+                    <span className="font-semibold">
+                      Chefe · {resp.name}
+                    </span>
+                    {resp.document && (
+                      <span className="text-[6px] text-muted-foreground">
+                        {resp.document}
+                      </span>
+                    )}
+                  </div>
+                </label>
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {/* Aplicadores / auxiliares */}
+      {/* Aplicadores / Auxiliares */}
       {aplicadores.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {aplicadores.map((resp) => {
-            const present = !!attendanceByMember[resp.id];
-            return (
-              <label
-                key={resp.id}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-[7px] cursor-pointer select-none",
-                  present
-                    ? "bg-emerald-50 border-emerald-300 text-emerald-700"
-                    : "bg-muted border-border text-muted-foreground",
-                )}
-              >
-                <input
-                  type="checkbox"
-                  className="h-2.5 w-2.5 rounded-sm border border-border accent-emerald-500"
-                  checked={present}
-                  onChange={(e) =>
-                    onTogglePresence(resp.id, e.target.checked)
-                  }
-                />
-                <span className="font-semibold">
-                  {resp.functionName || "Aplicador"}
-                </span>
-                <span className="truncate max-w-[96px]">
-                  {resp.name}
-                </span>
-                {resp.document && (
-                  <span className="text-[6px] text-muted-foreground">
-                    · {resp.document}
-                  </span>
-                )}
-              </label>
-            );
-          })}
+        <div className="space-y-0.25">
+          <div className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wide">
+            Aplicadores e Auxiliares
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {aplicadores.map((resp) => {
+              const present = !!attendanceByMember[resp.id];
+              return (
+                <label
+                  key={resp.id}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-2.25 py-1 rounded-full border text-[7px] cursor-pointer select-none",
+                    present
+                      ? "bg-emerald-50 border-emerald-300 text-emerald-800"
+                      : "bg-muted border-border text-muted-foreground",
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    className="h-2.5 w-2.5 rounded-sm border border-border accent-emerald-500"
+                    checked={present}
+                    onChange={(e) =>
+                      onTogglePresence(resp.id, e.target.checked)
+                    }
+                  />
+                  <div className="flex flex-col leading-tight max-w-[140px]">
+                    <span className="font-semibold truncate">
+                      {resp.functionName || "Aplicador"} · {resp.name}
+                    </span>
+                    {resp.document && (
+                      <span className="text-[6px] text-muted-foreground truncate">
+                        {resp.document}
+                      </span>
+                    )}
+                  </div>
+                </label>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
