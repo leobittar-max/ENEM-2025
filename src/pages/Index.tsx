@@ -13,6 +13,9 @@ import { TeamPresencePanel } from "@/components/enem/TeamPresencePanel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MadeWithDyad } from "@/components/made-with-dyad";
+import { useRoomProgressRealtime, RoomProgress } from "@/hooks/use-room-progress-realtime";
+import { RoomCompletionDialog } from "@/components/enem/RoomCompletionDialog";
+import { toast } from "sonner";
 
 const Index = () => {
   const {
@@ -37,6 +40,12 @@ const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showSupervision, setShowSupervision] = useState(false);
+
+  // Controle do popup de sala 100%
+  const [completionDialog, setCompletionDialog] = useState<{
+    open: boolean;
+    roomLabel: string;
+  }>({ open: false, roomLabel: "" });
 
   const coordinator = state.coordinator;
 
@@ -67,6 +76,28 @@ const Index = () => {
     setSidebarOpen(false);
   };
 
+  // Hook de progresso em tempo real: apenas se coordenador já configurado
+  useRoomProgressRealtime({
+    onItemCompleted: (room: RoomProgress) => {
+      if (!coordinator) return;
+      // Toast discreto avisando atividade concluída na sala
+      toast.success(
+        `Sala ${room.roomLabel} avançou no checklist (${room.completed}/${room.total}).`,
+        {
+          duration: 3000,
+        },
+      );
+    },
+    onRoomCompleted: (room: RoomProgress) => {
+      if (!coordinator) return;
+      // Popup chamativo quando sala atinge 100%
+      setCompletionDialog({
+        open: true,
+        roomLabel: room.roomLabel,
+      });
+    },
+  });
+
   return (
     <div
       className={cn(
@@ -74,6 +105,19 @@ const Index = () => {
       )}
     >
       <SetupModal open={!coordinator} onSubmit={initializeCoordinator} />
+
+      {completionDialog.open && (
+        <RoomCompletionDialog
+          open={completionDialog.open}
+          roomLabel={completionDialog.roomLabel}
+          onClose={() =>
+            setCompletionDialog((prev) => ({
+              ...prev,
+              open: false,
+            }))
+          }
+        />
+      )}
 
       {showLayout && coordinator && (
         <div className="flex min-h-screen">
