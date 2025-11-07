@@ -913,6 +913,39 @@ Ocorrências: ${state.occurrences.length} (Críticas: ${criticalOccurrences})
         report += `   Horário: ${o.timestamp}\n`;
         report += `   Descrição: ${o.description}\n`;
       });
+      report += "\n";
+    }
+
+    // NOVA SEÇÃO: histórico completo de interações do coordenador
+    if (state.log.length) {
+      const sortedLog = [...state.log].sort((a, b) => a.id - b.id);
+
+      report += "HISTÓRICO DE INTERAÇÕES DO COORDENADOR\n";
+      report += "--------------------------------------\n";
+
+      sortedLog.forEach((entry, index) => {
+        const categoriaLabel =
+          entry.category === "preparation"
+            ? "Preparação"
+            : entry.category === "operational"
+            ? "Operacional"
+            : entry.category === "incidents"
+            ? "Ocorrências"
+            : "Encerramento";
+
+        const statusLabel =
+          entry.status === "completed"
+            ? "Concluído"
+            : entry.status === "warning"
+            ? "Alerta"
+            : "Falha";
+
+        report += `${index + 1}. [${categoriaLabel}] [${statusLabel}] ${entry.name}\n`;
+        report += `   Registrado em: ${entry.timestamp}\n`;
+      });
+    } else {
+      report +=
+        "Não houve interações registradas no histórico durante o uso do sistema.\n";
     }
 
     report += `\nRelatório gerado em: ${formatNow()}\n`;
