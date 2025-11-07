@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, MouseEvent } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -40,8 +40,9 @@ interface SupervisionarPanelProps {
  * - Lista salas com barra de progresso (checklist Chefe de Sala).
  * - Ao expandir uma sala:
  *    - Mostra cabeçalho compacto.
- *    - Mostra responsáveis em lista simples com checkbox de presença.
+ *    - Mostra responsáveis em lista com checkbox de presença.
  * - Apenas uma sala aberta por vez.
+ * - Cliques dentro da área expandida NÃO fecham a sala.
  */
 export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   const [rooms, setRooms] = useState<RoomWithProgress[]>([]);
@@ -54,9 +55,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   const [attendanceByMember, setAttendanceByMember] = useState<
     Record<string, boolean>
   >({});
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(
-    null,
-  );
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [totalChecklistItems, setTotalChecklistItems] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -156,9 +155,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
 
       (teamData || []).forEach((member: any) => {
         if (!member.room_code) return;
-        const room = roomsData.find(
-          (r: any) => r.code === member.room_code,
-        );
+        const room = roomsData.find((r: any) => r.code === member.room_code);
         if (!room) return;
         if (!responsiblesMap[room.id]) responsiblesMap[room.id] = [];
         responsiblesMap[room.id].push({
@@ -182,8 +179,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         const label = room.name || room.code;
         const statuses = statusMap[room.id] || [];
         const completed = statuses.filter((s) => s.checked).length;
-        const percent =
-          total > 0 ? Math.round((completed / total) * 100) : 0;
+        const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
         return {
           id: room.id,
           label,
@@ -271,9 +267,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
     setRooms((prev) => {
       if (!totalChecklistItems) return prev;
       const completed = statuses.filter((s) => s.checked).length;
-      const percent = Math.round(
-        (completed / totalChecklistItems) * 100,
-      );
+      const percent = Math.round((completed / totalChecklistItems) * 100);
       return prev.map((room) =>
         room.id === roomId
           ? {
@@ -290,6 +284,11 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   const selectedRoomResponsibles =
     (selectedRoomId && responsiblesByRoom[selectedRoomId]) || [];
 
+  // Impede que cliques internos fechem/abram o card involuntariamente
+  const stopCardToggle = (event: MouseEvent) => {
+    event.stopPropagation();
+  };
+
   return (
     <div className="space-y-3 no-x-overflow">
       {/* Cabeçalho */}
@@ -298,29 +297,28 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
           🕵️
         </div>
         <div className="space-y-0.5">
-          <div className="text-xs font-semibold">
+          <div className="text-xs md:text-sm font-semibold">
             Supervisionar Salas
           </div>
-          <p className="text-[10px] text-muted-foreground">
-            Acompanhe o avanço dos checklists dos Chefes de Sala e marque
-            rapidamente quem está presente em cada sala, em um layout
-            otimizado para celular.
+          <p className="text-[10px] md:text-xs text-muted-foreground">
+            Acompanhe o avanço dos checklists dos Chefes de Sala e marque de
+            forma rápida quem está presente em cada sala.
           </p>
         </div>
       </div>
 
       {/* Lista de salas */}
       <div className="card-elevated space-y-1.5">
-        <div className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">
+        <div className="text-[9px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Progresso das salas
         </div>
 
         {loading ? (
-          <div className="text-[9px] text-muted-foreground">
+          <div className="text-[9px] md:text-xs text-muted-foreground">
             Carregando salas e progresso...
           </div>
         ) : rooms.length === 0 ? (
-          <div className="text-[9px] text-muted-foreground">
+          <div className="text-[9px] md:text-xs text-muted-foreground">
             Nenhuma sala cadastrada no Supabase.
           </div>
         ) : (
@@ -342,30 +340,28 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
                       : "border-border hover:bg-muted/40 cursor-pointer",
                   )}
                   onClick={() =>
-                    setSelectedRoomId(
-                      isSelected ? null : room.id,
-                    )
+                    setSelectedRoomId(isSelected ? null : room.id)
                   }
                 >
                   {/* Cabeçalho do card da sala */}
-                  <div className="flex items-center gap-2 text-[9px]">
+                  <div className="flex items-center gap-2 text-[9px] md:text-xs">
                     <div className="flex flex-col leading-tight">
                       <span className="font-semibold">
                         Sala {room.code}
                       </span>
                       {room.label !== room.code && (
-                        <span className="text-[7px] text-muted-foreground truncate">
+                        <span className="text-[7px] md:text-[9px] text-muted-foreground truncate">
                           {room.label}
                         </span>
                       )}
                     </div>
                     <div className="ml-auto flex flex-col items-end gap-0 leading-tight">
-                      <span className="text-[8px] text-muted-foreground">
+                      <span className="text-[7px] md:text-[9px] text-muted-foreground">
                         Checklist
                       </span>
-                      <span className="text-[9px] font-semibold text-primary">
+                      <span className="text-[9px] md:text-xs font-semibold text-primary">
                         {room.percent}%{" "}
-                        <span className="text-[7px] text-muted-foreground">
+                        <span className="text-[7px] md:text-[9px] text-muted-foreground">
                           ({room.completed}/{room.total})
                         </span>
                       </span>
@@ -387,25 +383,28 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
                     />
                   </div>
 
-                  {/* Resumo rápidos */}
-                  <div className="flex items-center gap-2 text-[7px] text-muted-foreground">
+                  {/* Resumo rápido */}
+                  <div className="flex items-center gap-2 text-[7px] md:text-[9px] text-muted-foreground">
                     <span>
                       Resp.:{" "}
                       <span className="font-semibold">
                         {responsibles.length}
                       </span>
                     </span>
-                    <span className="text-[6px] text-muted-foreground/80">
+                    <span className="text-[6px] md:text-[8px] text-muted-foreground/80">
                       {presentCount} presentes
                     </span>
-                    <span className="ml-auto text-[6px] text-muted-foreground/70">
-                      Toque para ver detalhes
+                    <span className="ml-auto text-[6px] md:text-[8px] text-muted-foreground/70">
+                      Clique para ver detalhes
                     </span>
                   </div>
 
                   {/* Detalhe da sala: lista de responsáveis */}
                   {isSelected && (
-                    <div className="mt-1.5 border-t border-border/60 pt-1.5">
+                    <div
+                      className="mt-1.5 border-t border-border/60 pt-1.5"
+                      onClick={stopCardToggle}
+                    >
                       <RoomDetailHeader
                         room={room}
                         total={responsibles.length}
@@ -432,7 +431,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 rounded-full border text-[9px] text-muted-foreground hover:bg-muted"
+            className="px-3 py-1.5 rounded-full border text-[9px] md:text-xs text-muted-foreground hover:bg-muted"
           >
             Voltar ao painel
           </button>
@@ -472,15 +471,15 @@ function RoomDetailHeader({
   present: number;
 }) {
   return (
-    <div className="flex items-center gap-2 text-[7px] mb-1">
+    <div className="flex items-center gap-2 text-[8px] md:text-[10px] mb-1">
       <div className="flex flex-col">
-        <span className="text-[8px] font-semibold text-muted-foreground uppercase tracking-wide">
+        <span className="text-[7px] md:text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">
           Sala selecionada
         </span>
-        <span className="text-[9px] font-semibold text-foreground">
+        <span className="text-[9px] md:text-xs font-semibold text-foreground">
           {room.code}
           {room.label !== room.code && (
-            <span className="text-[7px] text-muted-foreground">
+            <span className="text-[7px] md:text-[9px] text-muted-foreground">
               {" "}
               · {room.label}
             </span>
@@ -488,10 +487,10 @@ function RoomDetailHeader({
         </span>
       </div>
       <div className="ml-auto flex flex-col items-end gap-0.5">
-        <span className="text-[7px] text-muted-foreground">
+        <span className="text-[7px] md:text-[9px] text-muted-foreground">
           Responsáveis presentes
         </span>
-        <span className="text-[9px] font-semibold text-emerald-600">
+        <span className="text-[9px] md:text-xs font-semibold text-emerald-600">
           {present}/{total}
         </span>
       </div>
@@ -510,28 +509,24 @@ function ResponsiblesList({
   attendanceByMember: Record<string, boolean>;
   onTogglePresence: (memberId: string, next: boolean) => void;
 }) {
-  const roomResponsibles = responsibles.filter(
-    (r) => r.roomId === roomId,
-  );
+  const roomResponsibles = responsibles.filter((r) => r.roomId === roomId);
 
   if (!roomResponsibles.length) {
     return (
-      <div className="text-[7px] text-muted-foreground">
+      <div className="text-[7px] md:text-[9px] text-muted-foreground">
         Nenhum responsável vinculado a esta sala.
       </div>
     );
   }
 
   const chiefs = roomResponsibles.filter((r) => r.role === "chefe");
-  const aplicadores = roomResponsibles.filter(
-    (r) => r.role === "aplicador",
-  );
+  const aplicadores = roomResponsibles.filter((r) => r.role === "aplicador");
 
   return (
-    <div className="space-y-0.75">
+    <div className="space-y-1">
       {chiefs.length > 0 && (
-        <div className="space-y-0.25">
-          <div className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wide">
+        <div className="space-y-0.5">
+          <div className="text-[7px] md:text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">
             Chefes de Sala
           </div>
           <ul className="space-y-0.5">
@@ -541,20 +536,22 @@ function ResponsiblesList({
                 <li
                   key={resp.id}
                   className="flex items-center gap-2 px-1.5 py-1 rounded-lg bg-muted/40"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <input
                     type="checkbox"
-                    className="h-3.5 w-3.5 rounded border border-border accent-emerald-500"
+                    className="h-4 w-4 md:h-4.5 md:w-4.5 rounded border border-border accent-emerald-500 cursor-pointer"
                     checked={present}
-                    onChange={(e) =>
-                      onTogglePresence(resp.id, e.target.checked)
-                    }
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onTogglePresence(resp.id, e.target.checked);
+                    }}
                   />
                   <div className="flex flex-col leading-tight min-w-0">
-                    <span className="text-[8px] font-semibold text-foreground truncate">
+                    <span className="text-[8px] md:text-[10px] font-semibold text-foreground truncate">
                       {resp.name}
                     </span>
-                    <span className="text-[6px] text-muted-foreground">
+                    <span className="text-[6px] md:text-[8px] text-muted-foreground">
                       Chefe de Sala
                     </span>
                   </div>
@@ -566,8 +563,8 @@ function ResponsiblesList({
       )}
 
       {aplicadores.length > 0 && (
-        <div className="space-y-0.25">
-          <div className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wide">
+        <div className="space-y-0.5">
+          <div className="text-[7px] md:text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">
             Aplicadores e Auxiliares
           </div>
           <ul className="space-y-0.5">
@@ -577,20 +574,22 @@ function ResponsiblesList({
                 <li
                   key={resp.id}
                   className="flex items-center gap-2 px-1.5 py-1 rounded-lg bg-muted/20"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <input
                     type="checkbox"
-                    className="h-3.5 w-3.5 rounded border border-border accent-emerald-500"
+                    className="h-4 w-4 md:h-4.5 md:w-4.5 rounded border border-border accent-emerald-500 cursor-pointer"
                     checked={present}
-                    onChange={(e) =>
-                      onTogglePresence(resp.id, e.target.checked)
-                    }
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onTogglePresence(resp.id, e.target.checked);
+                    }}
                   />
                   <div className="flex flex-col leading-tight min-w-0">
-                    <span className="text-[8px] font-semibold text-foreground truncate">
+                    <span className="text-[8px] md:text-[10px] font-semibold text-foreground truncate">
                       {resp.functionName || "Aplicador"} · {resp.name}
                     </span>
-                    <span className="text-[6px] text-muted-foreground truncate">
+                    <span className="text-[6px] md:text-[8px] text-muted-foreground truncate">
                       {resp.document || "Documento não informado"}
                     </span>
                   </div>
