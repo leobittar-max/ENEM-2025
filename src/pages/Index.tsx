@@ -8,6 +8,7 @@ import { DuringTab } from "@/components/enem/DuringTab";
 import { ClosingTab } from "@/components/enem/ClosingTab";
 import { ReportTab } from "@/components/enem/ReportTab";
 import { LogPanel } from "@/components/enem/LogPanel";
+import { SupervisionarPanel } from "@/components/enem/SupervisionarPanel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MadeWithDyad } from "@/components/made-with-dyad";
@@ -34,6 +35,7 @@ const Index = () => {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showSupervision, setShowSupervision] = useState(false);
 
   const coordinator = state.coordinator;
 
@@ -44,20 +46,24 @@ const Index = () => {
     second: "2-digit",
   });
 
-  const examDateLabel =
-    coordinator?.examDay === 2
-      ? "16 de novembro de 2025"
-      : "09 de novembro de 2025";
-
   const showLayout = Boolean(coordinator);
 
   const handleExit = () => {
     resetAll();
     setShowHistory(false);
+    setShowSupervision(false);
+    setSidebarOpen(false);
   };
 
   const handleBackToPanel = () => {
     setShowHistory(false);
+    setShowSupervision(false);
+  };
+
+  const handleOpenSupervision = () => {
+    setShowHistory(false);
+    setShowSupervision(true);
+    setSidebarOpen(false);
   };
 
   return (
@@ -77,10 +83,14 @@ const Index = () => {
               occurrences={state.occurrences}
               currentTime={formattedNow}
               currentStage={currentStage}
-              onOpenHistory={() => setShowHistory(true)}
+              onOpenHistory={() => {
+                setShowHistory(true);
+                setShowSupervision(false);
+              }}
               onBackToPanel={handleBackToPanel}
               onExit={handleExit}
-              showBackToPanel={showHistory}
+              showBackToPanel={showHistory || showSupervision}
+              onOpenSupervision={handleOpenSupervision}
             />
           </div>
 
@@ -96,14 +106,16 @@ const Index = () => {
                   onCloseMobile={() => setSidebarOpen(false)}
                   onOpenHistory={() => {
                     setSidebarOpen(false);
+                    setShowSupervision(false);
                     setShowHistory(true);
                   }}
                   onBackToPanel={() => {
                     setSidebarOpen(false);
-                    setShowHistory(false);
+                    handleBackToPanel();
                   }}
                   onExit={handleExit}
-                  showBackToPanel={showHistory}
+                  showBackToPanel={showHistory || showSupervision}
+                  onOpenSupervision={handleOpenSupervision}
                 />
               </div>
               <div
@@ -115,8 +127,8 @@ const Index = () => {
 
           {/* Main area */}
           <div className="flex-1 flex flex-col app-safe-area">
-            {/* AppBar */}
-            {!showHistory && (
+            {/* AppBar (oculta apenas se for histórico ou supervisão? Não, mantemos para contexto) */}
+            {!showHistory && !showSupervision && (
               <header className="sticky top-0 z-30 bg-card shadow-sm border-b border-border px-4 pt-2 pb-2 flex items-center gap-3">
                 <button
                   className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-full border bg-muted text-sm touch-target"
@@ -156,8 +168,8 @@ const Index = () => {
               </header>
             )}
 
-            {/* TabBar Android-like */}
-            {!showHistory && (
+            {/* TabBar Android-like (apenas na visão principal) */}
+            {!showHistory && !showSupervision && (
               <nav className="bg-card px-2 pb-2 pt-1 border-b border-border">
                 <div className="tabbar-scroll">
                   <TabItem
@@ -198,6 +210,8 @@ const Index = () => {
             <main className="flex-1 px-4 pt-2 pb-3 md:px-6 space-y-3 no-x-overflow">
               {showHistory ? (
                 <LogPanel log={state.log} />
+              ) : showSupervision ? (
+                <SupervisionarPanel onClose={handleBackToPanel} />
               ) : (
                 <>
                   {activeTab === "preparation" && (
@@ -260,8 +274,8 @@ const Index = () => {
               )}
             </main>
 
-            {/* Rodapé mobile */}
-            {!showHistory && (
+            {/* Rodapé mobile (somente visão principal) */}
+            {!showHistory && !showSupervision && (
               <div className="px-4 pb-2 pt-1 flex gap-2 md:hidden bg-background border-t border-border">
                 <Button
                   className="flex-1 touch-target text-xs font-semibold"
