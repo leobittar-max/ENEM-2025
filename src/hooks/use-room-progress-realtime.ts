@@ -27,8 +27,9 @@ function getTodayISODate(): string {
 
 /**
  * Acompanha o progresso das salas baseado em checklist_status para a data de hoje.
- * - Recalcula progresso ao carregar e a cada evento realtime.
- * - Dispara callbacks para novas conclusões e salas que atingem 100%.
+ * - Calcula progresso inicial com base no banco.
+ * - A cada mudança realtime, recarrega apenas os registros da sala afetada
+ *   para garantir contagem exata de itens concluídos.
  */
 export function useRoomProgressRealtime(
   options: UseRoomProgressRealtimeOptions = {},
@@ -40,20 +41,17 @@ export function useRoomProgressRealtime(
   const [totalChecklistItems, setTotalChecklistItems] = useState(0);
   const today = useRef(getTodayISODate());
 
-  // Controla quais salas já tiveram 100% notificado para evitar repetir popup
   const roomCompletedNotified = useRef<Set<string>>(new Set());
-
-  // Cache simples de roomId -> label
   const roomLabelsRef = useRef<Record<string, string>>({});
 
-  // Carrega estado inicial (rooms, checklist_items, checklist_status)
+  // Carrega estado inicial
   useEffect(() => {
     let active = true;
 
     async function loadInitial() {
       setLoading(true);
 
-      // 1) Rooms
+      // Rooms
       const { data: roomsData, error: roomsError } = await supabase
         .from("rooms")
         .select("id, code, name");
@@ -63,13 +61,13 @@ export function useRoomProgressRealtime(
         return;
       }
 
-      const roomLabels: Record<string, string> = {};
+      const labels: Record<string, string> = {};
       roomsData.forEach((r) => {
-        roomLabels[r.id] = r.name || r.code;
+        labels[r.id] = r.name || r.code;
       });
-      roomLabelsRef.current = roomLabels;
+      roomLabelsRef.current = labels;
 
-      // 2) Checklist items para chefe_sala
+      // Checklist items de chefe de sala
       const { data: itemsData, error: itemsError } = await supabase
         .from("checklist_items")
         .select("id")
@@ -85,7 +83,7 @@ export function useRoomProgressRealtime(
       const totalItems = itemsData.length;
       setTotalChecklistItems(totalItems);
 
-      // 3) Status de hoje
+      // Status de hoje
       const { data: statusData, error: statusError } = await supabase
         .from("checklist_status")
         .select("room_id, item_id, checked")
@@ -99,6 +97,7 @@ export function useRoomProgressRealtime(
       if (!active) return;
 
       const next: Record<string, RoomProgress> = {};
+
       roomsData.forEach((room) => {
         const checkedForRoom = statusData.filter(
           (st) => st.room_id === room.id && st.checked,
@@ -109,13 +108,15 @@ export function useRoomProgressRealtime(
             ? Math.round((checkedForRoom / totalItems) * 100)
             : 0;
 
-        next[room.id] = {
+        const roomProgress: RoomProgress = {
           roomId: room.id,
-          roomLabel: roomLabels[room.id],
+          roomLabel: labels[room.id],
           completed: checkedForRoom,
           total: totalItems,
           percent,
         };
+
+        next[room.id] = roomProgress;
 
         if (percent === 100) {
           roomCompletedNotified.current.add(room.id);
@@ -133,7 +134,70 @@ export function useRoomProgressRealtime(
     };
   }, []);
 
-  // Realtime: escuta mudanças na tabela checklist_status
+  // Função auxiliar: recarrega progresso exato de uma sala específica
+  async function recomputeRoomProgress(
+    roomId: string,
+    changedItemId: string | null,
+    triggerCallbacks: boolean,
+  ) {
+    if (!roomId || totalChecklistItems === 0) return;
+
+    const roomLabel =
+      roomLabelsRef.current[roomId] || `Sala ${roomId.slice(0, 4)}`;
+
+    const { data: statusData, error: statusError } = await supabase
+      .from("checklist_status")
+      .select("item_id, checked")
+      .eq("date", today.current)
+      .eq("room_id", roomId);
+
+    if (statusError) {
+      return;
+    }
+
+    const completed = (statusData || []).filter((s) => s.checked).length;
+
+    setProgressByRoom((prev) => {
+      const percent =
+        totalChecklistItems > 0
+          ? Math.round((completed / totalChecklistItems) * 100)
+          : 0;
+
+      const updated: RoomProgress = {
+        roomId,
+        roomLabel,
+        completed,
+        total: totalChecklistItems,
+        percent,
+      };
+
+      // Callbacks somente se solicitado (em mudanças realtime)
+      if (triggerCallbacks && changedItemId) {
+        // onItemCompleted: sempre que um item entra como checked,
+        // quem decide é quem chamou (via payload).
+        if (options.onItemCompleted) {
+          options.onItemCompleted(updated, changedItemId);
+        }
+
+        // onRoomCompleted: apenas na transição para 100%
+        if (
+          options.onRoomCompleted &&
+          percent === 100 &&
+          !roomCompletedNotified.current.has(roomId)
+        ) {
+          roomCompletedNotified.current.add(roomId);
+          options.onRoomCompleted(updated);
+        }
+      }
+
+      return {
+        ...prev,
+        [roomId]: updated,
+      };
+    });
+  }
+
+  // Realtime: escuta mudanças na checklist_status e recarrega a sala afetada
   useEffect(() => {
     if (totalChecklistItems === 0) return;
 
@@ -147,86 +211,30 @@ export function useRoomProgressRealtime(
           table: "checklist_status",
           filter: `date=eq.${today.current}`,
         },
-        (payload) => {
+        async (payload) => {
           const newRow: any = payload.new;
           const oldRow: any = payload.old;
 
-          // Precisamos de room_id, item_id e checked
           const roomId: string = newRow?.room_id ?? oldRow?.room_id;
           const itemId: string = newRow?.item_id ?? oldRow?.item_id;
-          const newChecked: boolean =
-            newRow?.checked ?? oldRow?.checked ?? false;
+          const newChecked: boolean | null =
+            "checked" in (newRow || {}) ? newRow.checked : null;
+          const oldChecked: boolean | null =
+            "checked" in (oldRow || {}) ? oldRow.checked : null;
 
           if (!roomId || !itemId) return;
 
-          setProgressByRoom((prev) => {
-            const current = prev[roomId] || {
-              roomId,
-              roomLabel:
-                roomLabelsRef.current[roomId] || `Sala ${roomId.slice(0, 4)}`,
-              completed: 0,
-              total: totalChecklistItems,
-              percent: 0,
-            };
+          // Só dispara callbacks quando há mudança efetiva de checked
+          const changedToChecked =
+            newChecked === true && oldChecked !== true;
 
-            let completed = current.completed;
+          const shouldTriggerCallbacks = changedToChecked;
 
-            // Ajuste simplificado:
-            // - Se marca como true e antes não contava, incrementa.
-            // - Se marca como false e antes contava, decrementa.
-            // Este cálculo assume que eventos vêm coerentes; para segurança máxima,
-            // poderíamos reconsultar apenas os registros da sala, mas manteremos simples.
-            if (
-              payload.eventType === "INSERT" ||
-              payload.eventType === "UPDATE"
-            ) {
-              if (newChecked) {
-                // Garantir que não estamos contando o mesmo item duas vezes:
-                completed = Math.min(
-                  current.total,
-                  completed + 1,
-                );
-              } else {
-                completed = Math.max(0, completed - 1);
-              }
-            }
-
-            const percent =
-              current.total > 0
-                ? Math.round((completed / current.total) * 100)
-                : 0;
-
-            const updated: RoomProgress = {
-              ...current,
-              completed,
-              percent,
-            };
-
-            // Dispara callback de item concluído quando marcar como checked
-            if (
-              options.onItemCompleted &&
-              (payload.eventType === "INSERT" ||
-                payload.eventType === "UPDATE") &&
-              newChecked
-            ) {
-              options.onItemCompleted(updated, itemId);
-            }
-
-            // Popup de 100% só na transição <100 -> 100
-            if (
-              options.onRoomCompleted &&
-              percent === 100 &&
-              !roomCompletedNotified.current.has(roomId)
-            ) {
-              roomCompletedNotified.current.add(roomId);
-              options.onRoomCompleted(updated);
-            }
-
-            return {
-              ...prev,
-              [roomId]: updated,
-            };
-          });
+          await recomputeRoomProgress(
+            roomId,
+            shouldTriggerCallbacks ? itemId : null,
+            shouldTriggerCallbacks,
+          );
         },
       )
       .subscribe();
