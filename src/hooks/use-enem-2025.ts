@@ -38,7 +38,7 @@ export interface LogEntry {
   name: string;
   category: LogCategory;
   status: LogStatus;
-  timestamp: string;
+  timestamp: string; // horário da ação
 }
 
 export interface ChecklistInfoSource {
@@ -67,13 +67,12 @@ export interface Occurrence {
   type: string;
   description: string;
   critical: boolean;
-  timestamp: string;
+  timestamp: string; // data/hora da ocorrência
 }
 
 type TabId = "preparation" | "morning" | "during" | "closing" | "report";
 
-interface EnemState {
-  coordinator: CoordinatorData | null;
+interface DailyState {
   preparation: string[];
   morning: string[];
   closing: string[];
@@ -86,11 +85,19 @@ interface EnemState {
   log: LogEntry[];
 }
 
-const STORAGE_KEY = "enem2025_state_v1";
+interface EnemState {
+  // Estado independente por dia
+  day1: DailyState;
+  day2: DailyState;
+  // Coordenador atual e dia selecionado
+  coordinator: CoordinatorData | null;
+}
+
+const STORAGE_KEY = "enem2025_state_v2"; // nova versão para separar dias
 const STORAGE_THEME_KEY = "enem2025_theme_v1";
 const STORAGE_TAB_KEY = "enem2025_tab_v1";
 
-// Checklist completo (resumido mas funcional); cada item possui phase correta.
+// Checklist completo
 const checklistItemsBase: ChecklistItem[] = [
   // PREPARAÇÃO
   {
@@ -544,54 +551,46 @@ function parseTimeToToday(time: string) {
   return d;
 }
 
+function createEmptyDailyState(): DailyState {
+  return {
+    preparation: [],
+    morning: [],
+    closing: [],
+    occurrences: [],
+    stats: { present: 0, absent: 0 },
+    notes: {},
+    log: [],
+  };
+}
+
 function safeLoadState(): EnemState {
   if (typeof window === "undefined") {
     return {
+      day1: createEmptyDailyState(),
+      day2: createEmptyDailyState(),
       coordinator: null,
-      preparation: [],
-      morning: [],
-      closing: [],
-      occurrences: [],
-      stats: { present: 0, absent: 0 },
-      notes: {},
-      log: [],
     };
   }
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       return {
+        day1: createEmptyDailyState(),
+        day2: createEmptyDailyState(),
         coordinator: null,
-        preparation: [],
-        morning: [],
-        closing: [],
-        occurrences: [],
-        stats: { present: 0, absent: 0 },
-        notes: {},
-        log: [],
       };
     }
     const parsed = JSON.parse(raw) as EnemState;
     return {
+      day1: parsed.day1 ?? createEmptyDailyState(),
+      day2: parsed.day2 ?? createEmptyDailyState(),
       coordinator: parsed.coordinator ?? null,
-      preparation: parsed.preparation ?? [],
-      morning: parsed.morning ?? [],
-      closing: parsed.closing ?? [],
-      occurrences: parsed.occurrences ?? [],
-      stats: parsed.stats ?? { present: 0, absent: 0 },
-      notes: parsed.notes ?? {},
-      log: parsed.log ?? [],
     };
   } catch {
     return {
+      day1: createEmptyDailyState(),
+      day2: createEmptyDailyState(),
       coordinator: null,
-      preparation: [],
-      morning: [],
-      closing: [],
-      occurrences: [],
-      stats: { present: 0, absent: 0 },
-      notes: {},
-      log: [],
     };
   }
 }
@@ -615,6 +614,33 @@ export function useEnem2025() {
   const [theme, setTheme] = useState<"light" | "dark">(() => safeLoadTheme());
   const [firedAlerts, setFiredAlerts] = useState<Record<string, boolean>>({});
 
+  const coordinator = state.coordinator;
+  const currentDay: 1 | 2 | null = coordinator?.examDay ?? null;
+
+  // Helper: seleciona o estado diário conforme o dia atual do coordenador
+  const getDailyState = (): DailyState => {
+    if (currentDay === 2) return state.day2;
+    // default: dia 1
+    return state.day1;
+  };
+
+  const setDailyState = (updater: (prev: DailyState) => DailyState) => {
+    setState((prev) => {
+      if (currentDay === 2) {
+        return {
+          ...prev,
+          day2: updater(prev.day2),
+        };
+      }
+      return {
+        ...prev,
+        day1: updater(prev.day1),
+      };
+    });
+  };
+
+  const daily = getDailyState();
+
   // Relógio em tempo real
   useEffect(() => {
     const timer = setInterval(() => {
@@ -631,20 +657,10 @@ export function useEnem2025() {
     }
   }, [theme]);
 
-  // Persistência do estado
+  // Persistência do estado (incluindo ambos os dias)
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const toStore: EnemState = {
-      coordinator: state.coordinator,
-      preparation: state.preparation,
-      morning: state.morning,
-      closing: state.closing,
-      occurrences: state.occurrences,
-      stats: state.stats,
-      notes: state.notes,
-      log: state.log,
-    };
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
   function setActiveTab(tab: TabId) {
@@ -656,8 +672,8 @@ export function useEnem2025() {
 
   // Horários padrão conforme dia de prova
   const currentTimes = useMemo(() => {
-    if (!state.coordinator) return null;
-    return state.coordinator.examDay === 1
+    if (!coordinator) return null;
+    return coordinator.examDay === 1
       ? {
           gatesOpen: "12:00",
           gatesClose: "13:00",
@@ -670,16 +686,16 @@ export function useEnem2025() {
           examStart: "13:30",
           examEndRegular: "18:30",
         };
-  }, [state.coordinator]);
+  }, [coordinator]);
 
   const currentStage = useMemo(() => {
-    if (!state.coordinator) return "-";
+    if (!coordinator) return "-";
     const hour = now.getHours();
     if (hour < 8) return "Preparação";
     if (hour >= 8 && hour < 13) return "Manhã do Exame";
     if (hour >= 13 && hour < 19) return "Durante a Aplicação";
     return "Encerramento";
-  }, [now, state.coordinator]);
+  }, [now, coordinator]);
 
   const examTimeRemaining = useMemo(() => {
     if (!currentTimes) return "--:--:--";
@@ -694,9 +710,9 @@ export function useEnem2025() {
     ).padStart(2, "0")}`;
   }, [now, currentTimes]);
 
-  // Alertas automáticos
+  // Alertas automáticos por dia
   useEffect(() => {
-    if (!state.coordinator || !currentTimes) return;
+    if (!coordinator || !currentTimes) return;
 
     const alertsConfig = [
       {
@@ -726,7 +742,7 @@ export function useEnem2025() {
     ] as const;
 
     alertsConfig.forEach((cfg) => {
-      const key = `${cfg.id}_${state.coordinator.examDay}`;
+      const key = `${cfg.id}_DIA${coordinator.examDay}`;
       if (firedAlerts[key]) return;
 
       const target = parseTimeToToday(cfg.time);
@@ -740,11 +756,12 @@ export function useEnem2025() {
         showSuccess(cfg.message);
       }
     });
-  }, [now, currentTimes, state.coordinator, firedAlerts]);
+  }, [now, currentTimes, coordinator, firedAlerts]);
 
-  // Logs
+  // Logs (por dia)
   function addLog(name: string, category: LogCategory, status: LogStatus) {
-    setState((prev) => ({
+    if (!currentDay) return;
+    setDailyState((prev) => ({
       ...prev,
       log: [
         {
@@ -752,7 +769,7 @@ export function useEnem2025() {
           name,
           category,
           status,
-          timestamp: new Date().toLocaleTimeString("pt-BR", {
+          timestamp: new Date().toLocaleString("pt-BR", {
             timeZone: "America/Sao_Paulo",
             hour: "2-digit",
             minute: "2-digit",
@@ -773,7 +790,9 @@ export function useEnem2025() {
       coordinator: { ...payload },
     }));
     dismissToast(toastId);
-    showSuccess(`Bem-vinda(o), ${payload.name}! Sistema pronto para o ENEM.`);
+    showSuccess(
+      `Bem-vinda(o), ${payload.name}! Sistema pronto para o ENEM - Dia ${payload.examDay}.`,
+    );
   }
 
   function toggleTheme() {
@@ -785,6 +804,11 @@ export function useEnem2025() {
     list: "preparation" | "morning" | "closing",
     itemId: string,
   ) {
+    if (!currentDay) {
+      showError("Defina o dia do exame antes de usar o checklist.");
+      return;
+    }
+
     const source =
       list === "preparation"
         ? preparationItems
@@ -794,7 +818,7 @@ export function useEnem2025() {
     const item = source.find((i) => i.id === itemId);
     if (!item) return;
 
-    setState((prev) => {
+    setDailyState((prev) => {
       const current = prev[list];
       const isChecked = current.includes(itemId);
       const nextList = isChecked
@@ -808,7 +832,28 @@ export function useEnem2025() {
             : list === "morning"
             ? "operational"
             : "closing";
-        addLog(item.text, category, "completed");
+        // registra conclusão no log daquele dia
+        const entryName = `[Checklist] ${item.text}`;
+        const updatedLog: LogEntry[] = [
+          {
+            id: Date.now(),
+            name: entryName,
+            category,
+            status: "completed",
+            timestamp: new Date().toLocaleString("pt-BR", {
+              timeZone: "America/Sao_Paulo",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            }),
+          },
+          ...prev.log,
+        ];
+        return {
+          ...prev,
+          [list]: nextList,
+          log: updatedLog,
+        };
       }
 
       return {
@@ -819,7 +864,8 @@ export function useEnem2025() {
   }
 
   function setNote(id: string, value: string) {
-    setState((prev) => ({
+    if (!currentDay) return;
+    setDailyState((prev) => ({
       ...prev,
       notes: {
         ...prev.notes,
@@ -833,28 +879,43 @@ export function useEnem2025() {
     description: string;
     critical: boolean;
   }) {
+    if (!currentDay) {
+      showError("Defina o dia do exame antes de registrar ocorrências.");
+      return;
+    }
     if (!data.type || !data.description) {
       showError("Preencha tipo e descrição da ocorrência.");
       return;
     }
-    const occ: Occurrence = {
-      id: Date.now(),
-      type: data.type,
-      description: data.description,
-      critical: data.critical,
-      timestamp: formatNow(),
-    };
-    setState((prev) => ({
-      ...prev,
-      occurrences: [...prev.occurrences, occ],
-    }));
-    addLog(
-      occ.type,
-      "incidents",
-      occ.critical ? "warning" : "completed",
-    );
-    if (occ.critical) {
-      showError(`Ocorrência crítica registrada: ${occ.type}`);
+
+    const timestamp = formatNow();
+
+    setDailyState((prev) => {
+      const occ: Occurrence = {
+        id: Date.now(),
+        type: data.type,
+        description: data.description,
+        critical: data.critical,
+        timestamp,
+      };
+
+      const logEntry: LogEntry = {
+        id: Date.now() + 1,
+        name: `[Ocorrência] ${occ.type}`,
+        category: "incidents",
+        status: occ.critical ? "warning" : "completed",
+        timestamp,
+      };
+
+      return {
+        ...prev,
+        occurrences: [...prev.occurrences, occ],
+        log: [logEntry, ...prev.log],
+      };
+    });
+
+    if (data.critical) {
+      showError(`Ocorrência crítica registrada: ${data.type}`);
     } else {
       showSuccess("Ocorrência registrada.");
     }
@@ -862,53 +923,53 @@ export function useEnem2025() {
 
   function resetAll() {
     setState({
+      day1: createEmptyDailyState(),
+      day2: createEmptyDailyState(),
       coordinator: null,
-      preparation: [],
-      morning: [],
-      closing: [],
-      occurrences: [],
-      stats: { present: 0, absent: 0 },
-      notes: {},
-      log: [],
     });
     setFiredAlerts({});
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(STORAGE_KEY);
       window.localStorage.removeItem(STORAGE_TAB_KEY);
     }
-    showSuccess("Sistema reiniciado.");
+    showSuccess("Sistema reiniciado para ambos os dias.");
   }
 
   function buildTextReport(): string {
-    const coord = state.coordinator;
-    if (!coord) return "Configure o sistema antes de gerar o relatório.";
+    if (!coordinator || !currentDay) {
+      return "Configure o sistema e selecione o dia do exame antes de gerar o relatório.";
+    }
 
-    const criticalOccurrences = state.occurrences.filter((o) => o.critical)
-      .length;
+    const dayLabel = `${coordinator.examDay}º dia`;
+    const currentDaily = daily;
+
+    const criticalOccurrences = currentDaily.occurrences.filter(
+      (o) => o.critical,
+    ).length;
 
     let report = `
 RELATÓRIO FINAL - ENEM 2025
 --------------------------
 
-Coordenador(a): ${coord.name}
-Local: ${coord.location}
-Cidade/Estado: ${coord.city} - ${coord.state}
-Dia do Exame: ${coord.examDay}º dia
-Salas: ${coord.classrooms}
-Participantes: ${coord.participants}
-${coord.simulationMode ? "MODO SIMULAÇÃO ATIVADO\n" : ""}
+Coordenador(a): ${coordinator.name}
+Local: ${coordinator.location}
+Cidade/Estado: ${coordinator.city} - ${coordinator.state}
+Dia do Exame: ${dayLabel}
+Salas: ${coordinator.classrooms}
+Participantes: ${coordinator.participants}
+${coordinator.simulationMode ? "MODO SIMULAÇÃO ATIVADO\n" : ""}
 
-Preparação: ${state.preparation.length}/${preparationItems.length}
-Manhã: ${state.morning.length}/${morningItems.length}
-Encerramento: ${state.closing.length}/${closingItems.length}
+Preparação: ${currentDaily.preparation.length}/${preparationItems.length}
+Manhã: ${currentDaily.morning.length}/${morningItems.length}
+Encerramento: ${currentDaily.closing.length}/${closingItems.length}
 
-Ocorrências: ${state.occurrences.length} (Críticas: ${criticalOccurrences})
+Ocorrências: ${currentDaily.occurrences.length} (Críticas: ${criticalOccurrences})
 
 `;
 
-    if (state.occurrences.length) {
+    if (currentDaily.occurrences.length) {
       report += "Detalhamento das ocorrências:\n";
-      state.occurrences.forEach((o, idx) => {
+      currentDaily.occurrences.forEach((o, idx) => {
         report += `${idx + 1}. ${o.critical ? "[CRÍTICA] " : ""}${o.type}\n`;
         report += `   Horário: ${o.timestamp}\n`;
         report += `   Descrição: ${o.description}\n`;
@@ -916,12 +977,12 @@ Ocorrências: ${state.occurrences.length} (Críticas: ${criticalOccurrences})
       report += "\n";
     }
 
-    // NOVA SEÇÃO: histórico completo de interações do coordenador
-    if (state.log.length) {
-      const sortedLog = [...state.log].sort((a, b) => a.id - b.id);
+    // Histórico completo de interações do coordenador para aquele dia
+    if (currentDaily.log.length) {
+      const sortedLog = [...currentDaily.log].sort((a, b) => a.id - b.id);
 
-      report += "HISTÓRICO DE INTERAÇÕES DO COORDENADOR\n";
-      report += "--------------------------------------\n";
+      report += "HISTÓRICO DE INTERAÇÕES DO COORDENADOR (DIA SELECIONADO)\n";
+      report += "--------------------------------------------------------\n";
 
       sortedLog.forEach((entry, index) => {
         const categoriaLabel =
@@ -945,7 +1006,7 @@ Ocorrências: ${state.occurrences.length} (Críticas: ${criticalOccurrences})
       });
     } else {
       report +=
-        "Não houve interações registradas no histórico durante o uso do sistema.\n";
+        "Não houve interações registradas no histórico para o dia selecionado.\n";
     }
 
     report += `\nRelatório gerado em: ${formatNow()}\n`;
@@ -957,17 +1018,28 @@ Ocorrências: ${state.occurrences.length} (Críticas: ${criticalOccurrences})
     const blob = new Blob([text], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    const city = state.coordinator?.city || "local";
-    const day = state.coordinator?.examDay || 1;
+    const city = coordinator?.city || "local";
+    const day = coordinator?.examDay || 1;
     a.href = url;
     a.download = `relatorio_enem_${city}_dia${day}.txt`;
     a.click();
     URL.revokeObjectURL(url);
-    showSuccess("Relatório TXT baixado com sucesso.");
+    showSuccess(
+      `Relatório TXT do Dia ${day} baixado com sucesso (dados independentes).`,
+    );
   }
 
   return {
-    state,
+    state: {
+      coordinator,
+      preparation: daily.preparation,
+      morning: daily.morning,
+      closing: daily.closing,
+      occurrences: daily.occurrences,
+      stats: daily.stats,
+      notes: daily.notes,
+      log: daily.log,
+    },
     now,
     theme,
     activeTab,
