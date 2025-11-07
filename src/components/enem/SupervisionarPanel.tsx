@@ -42,7 +42,7 @@ interface SupervisionarPanelProps {
  *    - Mostra cabeçalho compacto.
  *    - Mostra responsáveis em lista com checkbox de presença.
  * - Apenas uma sala aberta por vez.
- * - Cliques dentro da área expandida NÃO fecham a sala.
+ * - Cliques em checkboxes e conteúdo interno NÃO fecham a sala.
  */
 export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   const [rooms, setRooms] = useState<RoomWithProgress[]>([]);
@@ -125,7 +125,6 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
 
       if (!active) return;
 
-      // Status por sala
       const statusMap: Record<string, ChecklistStatusRow[]> = {};
       (statusData || []).forEach((row: any) => {
         if (!statusMap[row.room_id]) statusMap[row.room_id] = [];
@@ -135,7 +134,6 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         });
       });
 
-      // Responsáveis por sala
       const responsiblesMap: Record<string, Responsible[]> = {};
       roomsData.forEach((room: Room) => {
         responsiblesMap[room.id] = [];
@@ -168,18 +166,17 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         });
       });
 
-      // Presenças
       const attendanceMap: Record<string, boolean> = {};
       (attendanceData || []).forEach((row: any) => {
         attendanceMap[row.member_id] = !!row.present;
       });
 
-      // Salas com progresso
       const roomList: RoomWithProgress[] = roomsData.map((room: any) => {
         const label = room.name || room.code;
         const statuses = statusMap[room.id] || [];
         const completed = statuses.filter((s) => s.checked).length;
         const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
         return {
           id: room.id,
           label,
@@ -213,7 +210,6 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
     };
   }, [today]);
 
-  // Realtime para progresso
   useEffect(() => {
     if (!totalChecklistItems) return;
 
@@ -281,17 +277,12 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
     });
   }
 
-  const selectedRoomResponsibles =
-    (selectedRoomId && responsiblesByRoom[selectedRoomId]) || [];
-
-  // Impede que cliques internos fechem/abram o card involuntariamente
   const stopCardToggle = (event: MouseEvent) => {
     event.stopPropagation();
   };
 
   return (
     <div className="space-y-3 no-x-overflow">
-      {/* Cabeçalho */}
       <div className="card-elevated flex items-start gap-3">
         <div className="h-8 w-8 rounded-2xl bg-primary/10 flex items-center justify-center text-lg">
           🕵️
@@ -307,7 +298,6 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         </div>
       </div>
 
-      {/* Lista de salas */}
       <div className="card-elevated space-y-1.5">
         <div className="text-[9px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Progresso das salas
@@ -337,20 +327,23 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
                     "rounded-2xl border bg-card px-3 py-2 flex flex-col gap-1.5 transition-colors",
                     isSelected
                       ? "border-primary/70 bg-primary/5 shadow-sm"
-                      : "border-border hover:bg-muted/40 cursor-pointer",
+                      : "border-border hover:bg-muted/40",
                   )}
-                  onClick={() =>
-                    setSelectedRoomId(isSelected ? null : room.id)
-                  }
                 >
-                  {/* Cabeçalho do card da sala */}
-                  <div className="flex items-center gap-2 text-[9px] md:text-xs">
+                  {/* Cabeçalho clicável para expandir/retrair */}
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 w-full text-left"
+                    onClick={() =>
+                      setSelectedRoomId(isSelected ? null : room.id)
+                    }
+                  >
                     <div className="flex flex-col leading-tight">
-                      <span className="font-semibold">
+                      <span className="text-[10px] md:text-xs font-semibold">
                         Sala {room.code}
                       </span>
                       {room.label !== room.code && (
-                        <span className="text-[7px] md:text-[9px] text-muted-foreground truncate">
+                        <span className="text-[8px] md:text-[10px] text-muted-foreground truncate">
                           {room.label}
                         </span>
                       )}
@@ -366,9 +359,8 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
                         </span>
                       </span>
                     </div>
-                  </div>
+                  </button>
 
-                  {/* Barra de progresso */}
                   <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                     <div
                       className={cn(
@@ -383,7 +375,6 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
                     />
                   </div>
 
-                  {/* Resumo rápido */}
                   <div className="flex items-center gap-2 text-[7px] md:text-[9px] text-muted-foreground">
                     <span>
                       Resp.:{" "}
@@ -395,11 +386,10 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
                       {presentCount} presentes
                     </span>
                     <span className="ml-auto text-[6px] md:text-[8px] text-muted-foreground/70">
-                      Clique para ver detalhes
+                      Clique no topo para ver detalhes
                     </span>
                   </div>
 
-                  {/* Detalhe da sala: lista de responsáveis */}
                   {isSelected && (
                     <div
                       className="mt-1.5 border-t border-border/60 pt-1.5"
@@ -425,7 +415,6 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         )}
       </div>
 
-      {/* Voltar */}
       {onClose && (
         <div className="flex justify-end">
           <button
@@ -540,7 +529,7 @@ function ResponsiblesList({
                 >
                   <input
                     type="checkbox"
-                    className="h-4 w-4 md:h-4.5 md:w-4.5 rounded border border-border accent-emerald-500 cursor-pointer"
+                    className="h-4 w-4 md:h-[18px] md:w-[18px] rounded border border-border accent-emerald-500 cursor-pointer"
                     checked={present}
                     onChange={(e) => {
                       e.stopPropagation();
@@ -578,7 +567,7 @@ function ResponsiblesList({
                 >
                   <input
                     type="checkbox"
-                    className="h-4 w-4 md:h-4.5 md:w-4.5 rounded border border-border accent-emerald-500 cursor-pointer"
+                    className="h-4 w-4 md:h-[18px] md:w-[18px] rounded border border-border accent-emerald-500 cursor-pointer"
                     checked={present}
                     onChange={(e) => {
                       e.stopPropagation();
