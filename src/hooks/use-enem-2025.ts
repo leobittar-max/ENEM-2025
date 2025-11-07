@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   showSuccess,
   showError,
-  showLoading,
-  dismissToast,
 } from "@/utils/toast";
 
 export type EnemNotificationType =
@@ -38,7 +36,7 @@ export interface LogEntry {
   name: string;
   category: LogCategory;
   status: LogStatus;
-  timestamp: string; // horário da ação
+  timestamp: string;
 }
 
 export interface ChecklistInfoSource {
@@ -67,7 +65,7 @@ export interface Occurrence {
   type: string;
   description: string;
   critical: boolean;
-  timestamp: string; // data/hora da ocorrência
+  timestamp: string;
 }
 
 type TabId = "preparation" | "morning" | "during" | "closing" | "report";
@@ -86,14 +84,12 @@ interface DailyState {
 }
 
 interface EnemState {
-  // Estado independente por dia
   day1: DailyState;
   day2: DailyState;
-  // Coordenador atual e dia selecionado
   coordinator: CoordinatorData | null;
 }
 
-const STORAGE_KEY = "enem2025_state_v2"; // nova versão para separar dias
+const STORAGE_KEY = "enem2025_state_v2";
 const STORAGE_THEME_KEY = "enem2025_theme_v1";
 const STORAGE_TAB_KEY = "enem2025_tab_v1";
 
@@ -617,35 +613,25 @@ export function useEnem2025() {
   const coordinator = state.coordinator;
   const currentDay: 1 | 2 | null = coordinator?.examDay ?? null;
 
-  // Helper: seleciona o estado diário conforme o dia atual do coordenador
   const getDailyState = (): DailyState => {
     if (currentDay === 2) return state.day2;
-    // default: dia 1
     return state.day1;
   };
 
   const setDailyState = (updater: (prev: DailyState) => DailyState) => {
     setState((prev) => {
       if (currentDay === 2) {
-        return {
-          ...prev,
-          day2: updater(prev.day2),
-        };
+        return { ...prev, day2: updater(prev.day2) };
       }
-      return {
-        ...prev,
-        day1: updater(prev.day1),
-      };
+      return { ...prev, day1: updater(prev.day1) };
     });
   };
 
   const daily = getDailyState();
 
-  // Relógio em tempo real
+  // Relógio
   useEffect(() => {
-    const timer = setInterval(() => {
-      setNow(new Date());
-    }, 1000);
+    const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -657,7 +643,7 @@ export function useEnem2025() {
     }
   }, [theme]);
 
-  // Persistência do estado (incluindo ambos os dias)
+  // Persistência
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -670,7 +656,6 @@ export function useEnem2025() {
     }
   }
 
-  // Horários padrão conforme dia de prova
   const currentTimes = useMemo(() => {
     if (!coordinator) return null;
     return coordinator.examDay === 1
@@ -758,7 +743,6 @@ export function useEnem2025() {
     });
   }, [now, currentTimes, coordinator, firedAlerts]);
 
-  // Logs (por dia)
   function addLog(name: string, category: LogCategory, status: LogStatus) {
     if (!currentDay) return;
     setDailyState((prev) => ({
@@ -784,12 +768,12 @@ export function useEnem2025() {
   // Ações públicas
 
   function initializeCoordinator(payload: CoordinatorData) {
-    const toastId = showLoading("Iniciando sistema...");
+    // Removido toast de carregamento para evitar travamentos;
+    // mantemos apenas o sucesso simples.
     setState((prev) => ({
       ...prev,
       coordinator: { ...payload },
     }));
-    dismissToast(toastId);
     showSuccess(
       `Bem-vinda(o), ${payload.name}! Sistema pronto para o ENEM - Dia ${payload.examDay}.`,
     );
@@ -832,7 +816,6 @@ export function useEnem2025() {
             : list === "morning"
             ? "operational"
             : "closing";
-        // registra conclusão no log daquele dia
         const entryName = `[Checklist] ${item.text}`;
         const updatedLog: LogEntry[] = [
           {
@@ -977,7 +960,6 @@ Ocorrências: ${currentDaily.occurrences.length} (Críticas: ${criticalOccurrenc
       report += "\n";
     }
 
-    // Histórico completo de interações do coordenador para aquele dia
     if (currentDaily.log.length) {
       const sortedLog = [...currentDaily.log].sort((a, b) => a.id - b.id);
 
