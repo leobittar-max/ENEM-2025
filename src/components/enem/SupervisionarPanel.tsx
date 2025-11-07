@@ -1,425 +1,245 @@
-import { useEffect, useMemo, useState } from "react";
-import { InfoDialog } from "@/components/enem/InfoDialog";
-import { Input } from "@/components/ui/input";
+import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { InfoDialog } from "@/components/enem/InfoDialog";
 
-type SupervisionChecklistItem = {
+interface Room {
   id: string;
-  bloco: string;
+  code: string;
+  name: string | null;
+}
+
+interface ChecklistItem {
+  id: string;
   titulo: string;
-  info_popup: {
-    titulo: string;
-    corpo: string;
-    fonte: {
-      manual: string;
-      pagina: number;
-    };
-  };
-};
+  bloco: string;
+  order_index: number;
+}
 
-const supervisionData: SupervisionChecklistItem[] = [
-  {
-    id: "A-01",
-    bloco: "Antes das provas",
-    titulo:
-      "Identificar participantes e orientar sobre documentos, envelope porta-objetos e itens proibidos",
-    info_popup: {
-      titulo: "Identificação e orientações iniciais",
-      corpo:
-        "Conferir documento com foto (físico ou digital oficial), confirmar nome civil/social, orientar sobre objetos proibidos e uso do envelope porta-objetos.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 2,
-      },
-    },
-  },
-  {
-    id: "A-02",
-    bloco: "Antes das provas",
-    titulo:
-      "Lacrar envelope porta-objetos e manter embaixo da carteira",
-    info_popup: {
-      titulo: "Uso correto do envelope porta-objetos",
-      corpo:
-        "Recolher celulares e eletrônicos desligados, lacrar o envelope identificado e manter embaixo da carteira.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 4,
-      },
-    },
-  },
-  {
-    id: "A-03",
-    bloco: "Antes das provas",
-    titulo:
-      "Realizar vistoria eletrônica com detector de metais",
-    info_popup: {
-      titulo: "Vistoria eletrônica obrigatória",
-      corpo:
-        "Executar a vistoria eletrônica de forma padronizada, em modo sonoro. Em caso de recusa ou alerta, solicitar fiscal volante e acionar a Coordenação.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 4,
-      },
-    },
-  },
-  {
-    id: "A-04",
-    bloco: "Antes das provas",
-    titulo:
-      "Controlar ida ao banheiro com fiscal volante (um por vez)",
-    info_popup: {
-      titulo: "Saída controlada para banheiro",
-      corpo:
-        "Permitir saída sempre acompanhada por fiscal volante, um participante por vez. Se a saída ocorrer antes do início, refazer identificação e vistoria.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 3,
-      },
-    },
-  },
-  {
-    id: "B-01",
-    bloco: "Distribuição e início",
-    titulo:
-      "Conferir número da sala nos envelopes e quantitativos recebidos",
-    info_popup: {
-      titulo: "Conferência dos materiais de sala",
-      corpo:
-        "Conferir se os envelopes correspondem à sala correta e se a quantidade de materiais está adequada.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 2,
-      },
-    },
-  },
-  {
-    id: "B-02",
-    bloco: "Distribuição e início",
-    titulo:
-      "Dar avisos obrigatórios e registrar horários no quadro",
-    info_popup: {
-      titulo: "Avisos e horários de referência",
-      corpo:
-        "Registrar no quadro os horários oficiais e reforçar regras de permanência mínima.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 2,
-      },
-    },
-  },
-  {
-    id: "B-03",
-    bloco: "Distribuição e início",
-    titulo:
-      "Abrir envelope com testemunha e distribuir material nominalmente",
-    info_popup: {
-      titulo: "Abertura e distribuição",
-      corpo:
-        "Abrir o envelope com testemunha e distribuir material nominalmente, com atenção a nomes iguais e Nome Social.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 3,
-      },
-    },
-  },
-  {
-    id: "B-04",
-    bloco: "Distribuição e início",
-    titulo:
-      "Reportar ausentes e tratar sala 100% ausente via Coordenação",
-    info_popup: {
-      titulo: "Gestão de ausências",
-      corpo:
-        "Reportar ausentes na janela indicada e seguir o procedimento específico para sala 100% ausente.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 3,
-      },
-    },
-  },
-  {
-    id: "C-01",
-    bloco: "Durante a aplicação",
-    titulo:
-      "Manter procedimento de vistoria eletrônica e exceções conforme regras",
-    info_popup: {
-      titulo: "Boas práticas de segurança",
-      corpo:
-        "Aplicar a vistoria eletrônica sempre que necessário, respeitando exceções previstas.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 4,
-      },
-    },
-  },
-  {
-    id: "C-02",
-    bloco: "Durante a aplicação",
-    titulo:
-      "Controlar saídas e permanência mínima de 2 horas",
-    info_popup: {
-      titulo: "Controle de fluxo e horários",
-      corpo:
-        "Organizar saídas acompanhadas, garantindo permanência mínima de 2 horas.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 3,
-      },
-    },
-  },
-  {
-    id: "C-03",
-    bloco: "Durante a aplicação",
-    titulo:
-      "Fazer leituras de tempo (60 min e 15 min finais) e orientar sobre caderno",
-    info_popup: {
-      titulo: "Avisos de tempo e caderno",
-      corpo:
-        "Anunciar marcos de tempo finais e reforçar regras para levar o caderno.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 5,
-      },
-    },
-  },
-  {
-    id: "C-04",
-    bloco: "Durante a aplicação",
-    titulo:
-      "Registrar ocorrências em ata/sistema imediatamente",
-    info_popup: {
-      titulo: "Rastreabilidade das ocorrências",
-      corpo:
-        "Registrar imediatamente ocorrências relevantes, acionando Coordenação em casos críticos.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 2,
-      },
-    },
-  },
-  {
-    id: "D-01",
-    bloco: "Encerramento e devolução",
-    titulo:
-      "Anunciar término, recolher materiais e interromper marcações",
-    info_popup: {
-      titulo: "Fechamento de prova em sala",
-      corpo:
-        "Anunciar término, interromper marcações e recolher materiais oficiais.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 5,
-      },
-    },
-  },
-  {
-    id: "D-02",
-    bloco: "Encerramento e devolução",
-    titulo:
-      "Preencher Lista de Presença e Ata de Sala com assinaturas finais",
-    info_popup: {
-      titulo: "Documentação de encerramento",
-      corpo:
-        "Conferir presentes/ausentes, registrar ocorrências na ata e colher assinaturas finais.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 2,
-      },
-    },
-  },
-  {
-    id: "D-03",
-    bloco: "Encerramento e devolução",
-    titulo:
-      "Organizar e devolver materiais à Coordenação",
-    info_popup: {
-      titulo: "Entrega organizada dos materiais",
-      corpo:
-        "Organizar materiais por envelope correto e devolver à Coordenação.",
-      fonte: {
-        manual: "Chefe de Sala",
-        pagina: 2,
-      },
-    },
-  },
-];
-
-const STORAGE_KEY = "enem2025_supervision_v1";
-
-type SupervisionStatus = {
+interface ChecklistStatusRow {
+  item_id: string;
   checked: boolean;
-  timestamp?: string;
-};
-
-// Mapa de itens por sala+chefe
-type SupervisionRoomMap = Record<string, SupervisionStatus>;
-
-// store[data][sala::chefe] = SupervisionRoomMap
-type SupervisionStore = Record<string, Record<string, SupervisionRoomMap>>;
-
-function getApplicationDate(): string {
-  const now = new Date();
-  const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Sao_Paulo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  return formatter.format(now);
 }
 
-function buildKey(sala: string, chefe: string) {
-  const cleanSala = sala.trim();
-  const cleanChefe = chefe.trim();
-  if (!cleanSala || !cleanChefe) return "";
-  return `${cleanSala}::${cleanChefe}`;
-}
-
-function loadStore(): SupervisionStore {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as SupervisionStore) : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveStore(store: SupervisionStore) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+interface RoomWithProgress {
+  id: string;
+  label: string;
+  completed: number;
+  total: number;
+  percent: number;
 }
 
 interface SupervisionarPanelProps {
   onClose?: () => void;
 }
 
-interface RoomProgress {
-  roomId: string;
-  roomLabel: string;
-  completed: number;
-  total: number;
-}
-
+/**
+ * Painel de supervisão do Coordenador:
+ * - Mostra todas as salas cadastradas.
+ * - Exibe barra de progresso do checklist de Chefe de Sala (dados Supabase).
+ * - Ao clicar em uma sala, mostra lista compacta de itens com status:
+ *   - Ícone verde pequeno para concluído
+ *   - Ícone vermelho discreto para pendente
+ * - Apenas uma sala pode estar "aberta" por vez.
+ */
 export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
-  const [sala, setSala] = useState("");
-  const [chefe, setChefe] = useState("");
-  const [store, setStore] = useState<SupervisionStore>(() => loadStore());
-  const [roomsProgress, setRoomsProgress] = useState<RoomProgress[]>([]);
+  const [rooms, setRooms] = useState<RoomWithProgress[]>([]);
+  const [items, setItems] = useState<ChecklistItem[]>([]);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [roomItemsStatus, setRoomItemsStatus] = useState<
+    Record<string, ChecklistStatusRow[]>
+  >({});
+  const [loading, setLoading] = useState(true);
 
-  const dataAplicacao = getApplicationDate();
-  const currentKey = buildKey(sala, chefe);
+  const today = useMemo(() => getTodayISO(), []);
 
+  // Carregar salas, itens e progresso inicial
   useEffect(() => {
-    setStore(loadStore());
-  }, []);
+    let active = true;
 
-  useEffect(() => {
-    saveStore(store);
-  }, [store]);
+    async function loadInitial() {
+      setLoading(true);
 
-  // Carrega progresso por sala a partir do Supabase (usado pelo coordenador)
-  useEffect(() => {
-    async function loadProgress() {
-      const today = getApplicationDate();
-      const { data: rooms } = await supabase
+      // 1) Salas
+      const { data: roomsData, error: roomsError } = await supabase
         .from("rooms")
-        .select("id, code, name");
+        .select("id, code, name")
+        .order("code", { ascending: true });
 
-      if (!rooms || rooms.length === 0) {
-        setRoomsProgress([]);
+      if (roomsError || !roomsData || roomsData.length === 0) {
+        if (active) {
+          setRooms([]);
+          setItems([]);
+          setLoading(false);
+        }
         return;
       }
 
-      const { data: items } = await supabase
+      // 2) Itens de checklist para Chefe de Sala
+      const { data: itemsData, error: itemsError } = await supabase
         .from("checklist_items")
-        .select("id")
-        .eq("role", "chefe_sala");
+        .select("id, bloco, titulo, order_index")
+        .eq("role", "chefe_sala")
+        .order("order_index", { ascending: true });
 
-      const totalById = items ? items.length : 0;
-      if (!items || items.length === 0) {
-        setRoomsProgress([]);
+      if (itemsError || !itemsData || itemsData.length === 0) {
+        if (active) {
+          setRooms([]);
+          setItems([]);
+          setLoading(false);
+        }
         return;
       }
 
-      const { data: status } = await supabase
+      const total = itemsData.length;
+
+      // 3) Status de hoje (para calcular progresso inicial)
+      const { data: statusData, error: statusError } = await supabase
         .from("checklist_status")
         .select("room_id, item_id, checked")
         .eq("date", today);
 
-      const progress: RoomProgress[] = rooms.map((room) => {
-        const st = (status || []).filter(
-          (s) => s.room_id === room.id && s.checked,
-        );
+      if (statusError || !statusData) {
+        if (active) {
+          setRooms([]);
+          setItems(itemsData as ChecklistItem[]);
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (!active) return;
+
+      // Mapa de status por sala
+      const statusMap: Record<string, ChecklistStatusRow[]> = {};
+      statusData.forEach((row: any) => {
+        if (!statusMap[row.room_id]) statusMap[row.room_id] = [];
+        statusMap[row.room_id].push({
+          item_id: row.item_id,
+          checked: row.checked,
+        });
+      });
+
+      const roomList: RoomWithProgress[] = roomsData.map((room: any) => {
+        const label = room.name || room.code;
+        const statuses = statusMap[room.id] || [];
+        const completed = statuses.filter((s) => s.checked).length;
+        const percent =
+          total > 0 ? Math.round((completed / total) * 100) : 0;
         return {
-          roomId: room.id,
-          roomLabel: room.name || room.code,
-          completed: st.length,
-          total: totalById,
+          id: room.id,
+          label,
+          completed,
+          total,
+          percent,
         };
       });
 
-      setRoomsProgress(progress);
+      setRoomItemsStatus(statusMap);
+      setItems(itemsData as ChecklistItem[]);
+      setRooms(roomList);
+      setLoading(false);
     }
 
-    loadProgress();
-  }, []);
+    loadInitial();
 
-  const currentStatus: SupervisionRoomMap = useMemo(() => {
-    if (!currentKey) return {};
-    return store[dataAplicacao]?.[currentKey] || {};
-  }, [store, dataAplicacao, currentKey]);
+    return () => {
+      active = false;
+    };
+  }, [today]);
 
-  const grouped = useMemo(() => {
-    const byBlock: Record<string, SupervisionChecklistItem[]> = {};
-    supervisionData.forEach((item) => {
-      if (!byBlock[item.bloco]) byBlock[item.bloco] = [];
-      byBlock[item.bloco].push(item);
+  // Realtime: sempre que checklist_status mudar, atualiza apenas a sala afetada
+  useEffect(() => {
+    if (!items.length) return;
+
+    const channel = supabase
+      .channel("supervision-room-status")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "checklist_status",
+          filter: `date=eq.${today}`,
+        },
+        async (payload) => {
+          const newRow: any = payload.new;
+          const oldRow: any = payload.old;
+          const roomId: string = newRow?.room_id ?? oldRow?.room_id;
+          if (!roomId) return;
+
+          await reloadRoomStatus(roomId);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, today]);
+
+  async function reloadRoomStatus(roomId: string) {
+    // Recarrega status daquela sala
+    const { data: statusData, error: statusError } = await supabase
+      .from("checklist_status")
+      .select("item_id, checked")
+      .eq("date", today)
+      .eq("room_id", roomId);
+
+    if (statusError) return;
+
+    const statuses: ChecklistStatusRow[] = (statusData || []).map(
+      (row: any) => ({
+        item_id: row.item_id,
+        checked: row.checked,
+      }),
+    );
+
+    setRoomItemsStatus((prev) => ({
+      ...prev,
+      [roomId]: statuses,
+    }));
+
+    // Atualiza progresso daquela sala
+    setRooms((prev) => {
+      const total = items.length || 0;
+      const completed = statuses.filter((s) => s.checked).length;
+      const percent =
+        total > 0 ? Math.round((completed / total) * 100) : 0;
+
+      return prev.map((room) =>
+        room.id === roomId
+          ? {
+              ...room,
+              completed,
+              total,
+              percent,
+            }
+          : room,
+      );
     });
-    return byBlock;
-  }, []);
+  }
 
-  const handleToggle = (itemId: string) => {
-    if (!currentKey) return;
-    setStore((prev) => {
-      const next: SupervisionStore = { ...prev };
+  const selectedRoom = rooms.find((r) => r.id === selectedRoomId) || null;
+  const selectedRoomStatus = selectedRoomId
+    ? roomItemsStatus[selectedRoomId] || []
+    : [];
 
-      if (!next[dataAplicacao]) next[dataAplicacao] = {};
-      if (!next[dataAplicacao][currentKey]) {
-        next[dataAplicacao][currentKey] = {};
-      }
-
-      const roomMap = next[dataAplicacao][currentKey];
-      const prevItem = roomMap[itemId];
-      const checked = !prevItem?.checked;
-
-      roomMap[itemId] = {
-        checked,
-        timestamp: checked
-          ? new Date().toLocaleTimeString("pt-BR", {
-              timeZone: "America/Sao_Paulo",
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            })
-          : undefined,
-      };
-
-      return next;
-    });
-  };
-
-  const totalItems = supervisionData.length;
-  const completedCount = supervisionData.filter(
-    (item) => currentStatus[item.id]?.checked,
-  ).length;
-  const progress =
-    totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
+  const selectedItems = useMemo(() => {
+    if (!selectedRoomId) return [];
+    const statusMap = new Map(
+      selectedRoomStatus.map((s) => [s.item_id, s.checked]),
+    );
+    return items.map((item) => ({
+      ...item,
+      checked: statusMap.get(item.id) || false,
+    }));
+  }, [items, selectedRoomId, selectedRoomStatus]);
 
   return (
     <div className="space-y-3 no-x-overflow">
+      {/* Cabeçalho */}
       <div className="card-elevated flex items-start gap-3">
         <div className="h-8 w-8 rounded-2xl bg-primary/10 flex items-center justify-center text-lg">
           🕵️
@@ -429,56 +249,75 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
             Supervisionar Chefes de Sala
           </div>
           <p className="text-[10px] text-muted-foreground">
-            Veja o progresso dos checklists por sala (dados via Supabase) e,
-            abaixo, utilize o checklist rápido para registrar sua própria
-            supervisão presencial por sala e Chefe.
+            Acompanhe o progresso das salas em tempo real. Clique em uma sala
+            para ver uma visão compacta dos itens já cumpridos e pendentes,
+            sem editar nada: os próprios Chefes de Sala atualizam seus
+            checklists.
           </p>
         </div>
       </div>
 
-      {/* Visão geral de progresso por sala */}
+      {/* Visão geral das salas */}
       <div className="card-elevated space-y-1.5">
         <div className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">
-          Visão geral das salas
+          Progresso das salas
         </div>
-        {roomsProgress.length === 0 ? (
+
+        {loading ? (
           <div className="text-[9px] text-muted-foreground">
-            Nenhuma sala cadastrada no Supabase. Cadastre salas e chefes para
-            acompanhar aqui.
+            Carregando salas e progresso...
+          </div>
+        ) : rooms.length === 0 ? (
+          <div className="text-[9px] text-muted-foreground">
+            Nenhuma sala cadastrada no Supabase.
           </div>
         ) : (
           <div className="space-y-1.5">
-            {roomsProgress.map((room) => {
-              const pct =
-                room.total > 0
-                  ? Math.round((room.completed / room.total) * 100)
-                  : 0;
+            {rooms.map((room) => {
+              const isSelected = room.id === selectedRoomId;
               return (
                 <div
-                  key={room.roomId}
-                  className="flex flex-col gap-0.5 rounded-2xl border bg-card px-3 py-2"
+                  key={room.id}
+                  className={cn(
+                    "rounded-2xl border bg-card px-3 py-2 flex flex-col gap-1.5 cursor-pointer transition-colors",
+                    isSelected
+                      ? "border-primary/70 bg-primary/5 shadow-sm"
+                      : "border-border hover:bg-muted/40",
+                  )}
+                  onClick={() =>
+                    setSelectedRoomId(
+                      isSelected ? null : room.id,
+                    )
+                  }
                 >
-                  <div className="flex items-center justify-between text-[9px]">
+                  <div className="flex items-center gap-2 text-[9px]">
                     <div className="font-semibold truncate">
-                      Sala {room.roomLabel}
+                      Sala {room.label}
                     </div>
-                    <div className="text-muted-foreground">
-                      {room.completed}/{room.total} · {pct}%
+                    <div className="ml-auto text-muted-foreground">
+                      {room.completed}/{room.total} · {room.percent}%
                     </div>
                   </div>
                   <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                     <div
                       className={cn(
                         "h-full rounded-full transition-all",
-                        pct >= 80
+                        room.percent >= 80
                           ? "bg-emerald-500"
-                          : pct >= 40
+                          : room.percent >= 40
                           ? "bg-amber-400"
                           : "bg-red-400",
                       )}
-                      style={{ width: `${pct}%` }}
+                      style={{ width: `${room.percent}%` }}
                     />
                   </div>
+                  {isSelected && (
+                    <div className="mt-1.5 border-t border-border/60 pt-1.5">
+                      <RoomCompactChecklist
+                        items={selectedItems}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -486,125 +325,101 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         )}
       </div>
 
-      {/* Form local para checklist de supervisão manual por sala+chefe (offline/local) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <div className="space-y-1">
-          <label className="text-[9px] font-semibold text-muted-foreground">
-            Data da aplicação
-          </label>
-          <div className="px-3 py-2 rounded-2xl bg-muted text-[10px] border border-border">
-            {dataAplicacao}
-          </div>
-        </div>
-        <div className="space-y-1">
-          <label className="text-[9px] font-semibold text-muted-foreground">
-            Sala
-          </label>
-          <Input
-            placeholder="Ex: 101, 2º andar..."
-            value={sala}
-            onChange={(e) => setSala(e.target.value)}
-            className="text-[10px] rounded-2xl h-9 py-1.5"
-          />
-        </div>
-        <div className="space-y-1">
-          <label className="text-[9px] font-semibold text-muted-foreground">
-            Chefe de Sala (observado)
-          </label>
-          <Input
-            placeholder="Nome do Chefe observado"
-            value={chefe}
-            onChange={(e) => setChefe(e.target.value)}
-            className="text-[10px] rounded-2xl h-9 py-1.5"
-          />
-        </div>
-      </div>
-
-      {currentKey ? (
-        <div className="card-elevated flex items-center gap-3 text-[9px]">
-          <div className="flex-1">
-            <div className="font-semibold text-xs">
-              Progresso da supervisão presencial
-            </div>
-            <div className="text-muted-foreground">
-              {completedCount}/{totalItems} itens marcados
-            </div>
-            <div className="mt-1 h-1.5 w-full rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3 py-1 rounded-full border text-[9px] text-muted-foreground hover:bg-muted"
-            >
-              Voltar ao painel
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="card-elevated text-[9px] text-muted-foreground">
-          Informe sala e nome do Chefe de Sala para registrar a supervisão
-          presencial detalhada abaixo.
+      {/* Botão voltar opcional */}
+      {onClose && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-3 py-1.5 rounded-full border text-[9px] text-muted-foreground hover:bg-muted"
+          >
+            Voltar ao painel
+          </button>
         </div>
       )}
-
-      {/* Checklist de supervisão manual (localStorage) */}
-      <div className="space-y-3">
-        {Object.entries(grouped).map(([block, items]) => (
-          <div key={block} className="space-y-1.5">
-            <div className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">
-              {block}
-            </div>
-            <div className="space-y-1.5">
-              {items.map((item) => {
-                const status = currentStatus[item.id];
-                const checked = Boolean(status?.checked);
-                return (
-                  <div
-                    key={item.id}
-                    className={cn(
-                      "flex items-start gap-2 rounded-2xl border bg-card px-3 py-2 shadow-sm",
-                      checked && "border-primary/40 bg-primary/5",
-                    )}
-                  >
-                    <input
-                      type="checkbox"
-                      className="mt-1 h-4 w-4 rounded border border-border cursor-pointer"
-                      checked={checked}
-                      onChange={() => handleToggle(item.id)}
-                      aria-label={`Marcar item ${item.id} como concluído`}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-1.5">
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[10px] font-semibold text-foreground">
-                            {item.id} · {item.titulo}
-                          </div>
-                          {status?.timestamp && (
-                            <div className="text-[8px] text-muted-foreground">
-                              Marcado às {status.timestamp}
-                            </div>
-                          )}
-                        </div>
-                        <InfoDialog
-                          triggerIcon="i"
-                          title={item.info_popup.titulo}
-                          body={`${item.info_popup.corpo}\n\nFonte: Manual do Chefe de Sala, p.${item.info_popup.fonte.pagina}.`}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 };
+
+function RoomCompactChecklist({
+  items,
+}: {
+  items: (ChecklistItem & { checked: boolean })[];
+}) {
+  if (!items.length) {
+    return (
+      <div className="text-[8px] text-muted-foreground">
+        Nenhum item de checklist configurado para Chefes de Sala.
+      </div>
+    );
+  }
+
+  // Agrupar por bloco para leitura rápida
+  const grouped: Record<string, (ChecklistItem & { checked: boolean })[]> =
+    {};
+  items.forEach((item) => {
+    if (!grouped[item.bloco]) grouped[item.bloco] = [];
+    grouped[item.bloco].push(item);
+  });
+
+  return (
+    <div className="space-y-1.5">
+      {Object.entries(grouped).map(([bloco, blocoItens]) => (
+        <div key={bloco} className="space-y-0.5">
+          <div className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wide">
+            {bloco}
+          </div>
+          <div className="space-y-0.25">
+            {blocoItens.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-1.5 text-[7px]"
+              >
+                <span
+                  className={cn(
+                    "inline-flex h-3 w-3 items-center justify-center rounded-full border",
+                    item.checked
+                      ? "bg-emerald-500 border-emerald-600"
+                      : "bg-red-50 border-red-300",
+                  )}
+                >
+                  {item.checked ? (
+                    <span className="text-[7px] text-white">✓</span>
+                  ) : (
+                    <span className="text-[7px] text-red-500">!</span>
+                  )}
+                </span>
+                <span
+                  className={cn(
+                    "truncate",
+                    item.checked
+                      ? "text-emerald-700"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {item.id} · {item.titulo}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <div className="mt-1 text-[7px] text-muted-foreground/80">
+        Itens são somente leitura aqui; atualizados diretamente pelos
+        Chefes de Sala em seus próprios painéis.
+      </div>
+    </div>
+  );
+}
+
+function getTodayISO(): string {
+  const now = new Date();
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return fmt.format(now);
+}
