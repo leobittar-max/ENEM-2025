@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { InfoDialog } from "@/components/enem/InfoDialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 type SupervisionChecklistItem = {
   id: string;
@@ -26,7 +27,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Identificação e orientações iniciais",
       corpo:
-        "Conferir documento com foto (físico ou digital oficial), confirmar nome civil/social, orientar sobre objetos proibidos e uso do envelope porta-objetos. Reforçar caneta preta transparente e silêncio em sala.",
+        "Conferir documento com foto (físico ou digital oficial), confirmar nome civil/social, orientar sobre objetos proibidos e uso do envelope porta-objetos.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 2,
@@ -41,7 +42,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Uso correto do envelope porta-objetos",
       corpo:
-        "Recolher celulares e eletrônicos desligados, lacrar o envelope com identificação do participante e manter embaixo da carteira durante toda a aplicação. Em caso de descumprimento, comunicar a Coordenação.",
+        "Recolher celulares e eletrônicos desligados, lacrar o envelope identificado e manter embaixo da carteira.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 4,
@@ -56,7 +57,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Vistoria eletrônica obrigatória",
       corpo:
-        "Executar a vistoria eletrônica de forma padronizada, em modo sonoro. Em caso de recusa ou alerta, solicitar fiscal volante e acionar a Coordenação. Registrar em ata quando necessário.",
+        "Executar a vistoria eletrônica de forma padronizada, em modo sonoro. Em caso de recusa ou alerta, solicitar fiscal volante e acionar a Coordenação.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 4,
@@ -86,7 +87,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Conferência dos materiais de sala",
       corpo:
-        "Conferir se os envelopes correspondem à sala correta e se a quantidade de materiais está adequada. Reportar divergências imediatamente à Coordenação.",
+        "Conferir se os envelopes correspondem à sala correta e se a quantidade de materiais está adequada.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 2,
@@ -101,7 +102,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Avisos e horários de referência",
       corpo:
-        "Antes da abertura, dar os avisos obrigatórios, registrar no quadro os horários oficiais (início, 2h mín., 60 e 15 minutos finais) e reforçar regras de permanência mínima.",
+        "Registrar no quadro os horários oficiais e reforçar regras de permanência mínima.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 2,
@@ -116,7 +117,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Abertura e distribuição",
       corpo:
-        "Abrir o envelope conforme orientação, com testemunha, e distribuir material de forma nominal. No 2º dia, entregar também a Folha de Rascunho. Atenção a nomes iguais e Nome Social.",
+        "Abrir o envelope com testemunha e distribuir material nominalmente, com atenção a nomes iguais e Nome Social.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 3,
@@ -131,7 +132,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Gestão de ausências",
       corpo:
-        "Reportar ausentes na janela indicada e seguir o procedimento específico para sala 100% ausente, sempre via Coordenação.",
+        "Reportar ausentes na janela indicada e seguir o procedimento específico para sala 100% ausente.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 3,
@@ -146,7 +147,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Boas práticas de segurança",
       corpo:
-        "Aplicar a vistoria eletrônica sempre que necessário, respeitando exceções previstas (atendimentos específicos). Em anomalias, registrar e acionar Coordenação.",
+        "Aplicar a vistoria eletrônica sempre que necessário, respeitando exceções previstas.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 4,
@@ -161,7 +162,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Controle de fluxo e horários",
       corpo:
-        "Organizar saídas um por vez, sempre acompanhado. Garantir permanência mínima de 2 horas. Atualizar o quadro com os horários de referência.",
+        "Organizar saídas acompanhadas, garantindo permanência mínima de 2 horas.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 3,
@@ -176,7 +177,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Avisos de tempo e caderno",
       corpo:
-        "Anunciar marcos de tempo (60 e 15 min finais). Reforçar regras para levar o caderno (apenas no horário permitido).",
+        "Anunciar marcos de tempo finais e reforçar regras para levar o caderno.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 5,
@@ -191,7 +192,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Rastreabilidade das ocorrências",
       corpo:
-        "Registrar imediatamente ocorrências relevantes (documentos irregulares, desistências, intercorrências médicas, barulho, energia). Em casos críticos, acionar a Coordenação.",
+        "Registrar imediatamente ocorrências relevantes, acionando Coordenação em casos críticos.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 2,
@@ -206,7 +207,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Fechamento de prova em sala",
       corpo:
-        "Anunciar término, interromper marcações e recolher cartões-resposta, folhas de redação e cadernos. Em caso de recusa, chamar assistente/Coordenação e registrar.",
+        "Anunciar término, interromper marcações e recolher materiais oficiais.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 5,
@@ -221,7 +222,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Documentação de encerramento",
       corpo:
-        "Conferir presentes/ausentes, registrar ocorrências na ata e colher as assinaturas finais (observando o procedimento dos últimos três participantes juntos, quando aplicável).",
+        "Conferir presentes/ausentes, registrar ocorrências na ata e colher assinaturas finais.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 2,
@@ -236,7 +237,7 @@ const supervisionData: SupervisionChecklistItem[] = [
     info_popup: {
       titulo: "Entrega organizada dos materiais",
       corpo:
-        "Organizar materiais por envelope correto, identificar a sala nos rótulos e devolver à Coordenação para conferência e lacre de malotes.",
+        "Organizar materiais por envelope correto e devolver à Coordenação.",
       fonte: {
         manual: "Chefe de Sala",
         pagina: 2,
@@ -295,10 +296,18 @@ interface SupervisionarPanelProps {
   onClose?: () => void;
 }
 
+interface RoomProgress {
+  roomId: string;
+  roomLabel: string;
+  completed: number;
+  total: number;
+}
+
 export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   const [sala, setSala] = useState("");
   const [chefe, setChefe] = useState("");
   const [store, setStore] = useState<SupervisionStore>(() => loadStore());
+  const [roomsProgress, setRoomsProgress] = useState<RoomProgress[]>([]);
 
   const dataAplicacao = getApplicationDate();
   const currentKey = buildKey(sala, chefe);
@@ -310,6 +319,53 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   useEffect(() => {
     saveStore(store);
   }, [store]);
+
+  // Carrega progresso por sala a partir do Supabase (usado pelo coordenador)
+  useEffect(() => {
+    async function loadProgress() {
+      const today = getApplicationDate();
+      const { data: rooms } = await supabase
+        .from("rooms")
+        .select("id, code, name");
+
+      if (!rooms || rooms.length === 0) {
+        setRoomsProgress([]);
+        return;
+      }
+
+      const { data: items } = await supabase
+        .from("checklist_items")
+        .select("id")
+        .eq("role", "chefe_sala");
+
+      const totalById = items ? items.length : 0;
+      if (!items || items.length === 0) {
+        setRoomsProgress([]);
+        return;
+      }
+
+      const { data: status } = await supabase
+        .from("checklist_status")
+        .select("room_id, item_id, checked")
+        .eq("date", today);
+
+      const progress: RoomProgress[] = rooms.map((room) => {
+        const st = (status || []).filter(
+          (s) => s.room_id === room.id && s.checked,
+        );
+        return {
+          roomId: room.id,
+          roomLabel: room.name || room.code,
+          completed: st.length,
+          total: totalById,
+        };
+      });
+
+      setRoomsProgress(progress);
+    }
+
+    loadProgress();
+  }, []);
 
   const currentStatus: SupervisionRoomMap = useMemo(() => {
     if (!currentKey) return {};
@@ -370,16 +426,67 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         </div>
         <div className="space-y-0.5">
           <div className="text-xs font-semibold">
-            Supervisionar Chefe de Sala
+            Supervisionar Chefes de Sala
           </div>
           <p className="text-[10px] text-muted-foreground">
-            Acompanhe, por sala, se o Chefe está seguindo os procedimentos
-            essenciais do Manual do Chefe de Sala. Os dados ficam salvos por
-            data, sala e responsável.
+            Veja o progresso dos checklists por sala (dados via Supabase) e,
+            abaixo, utilize o checklist rápido para registrar sua própria
+            supervisão presencial por sala e Chefe.
           </p>
         </div>
       </div>
 
+      {/* Visão geral de progresso por sala */}
+      <div className="card-elevated space-y-1.5">
+        <div className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">
+          Visão geral das salas
+        </div>
+        {roomsProgress.length === 0 ? (
+          <div className="text-[9px] text-muted-foreground">
+            Nenhuma sala cadastrada no Supabase. Cadastre salas e chefes para
+            acompanhar aqui.
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {roomsProgress.map((room) => {
+              const pct =
+                room.total > 0
+                  ? Math.round((room.completed / room.total) * 100)
+                  : 0;
+              return (
+                <div
+                  key={room.roomId}
+                  className="flex flex-col gap-0.5 rounded-2xl border bg-card px-3 py-2"
+                >
+                  <div className="flex items-center justify-between text-[9px]">
+                    <div className="font-semibold truncate">
+                      Sala {room.roomLabel}
+                    </div>
+                    <div className="text-muted-foreground">
+                      {room.completed}/{room.total} · {pct}%
+                    </div>
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all",
+                        pct >= 80
+                          ? "bg-emerald-500"
+                          : pct >= 40
+                          ? "bg-amber-400"
+                          : "bg-red-400",
+                      )}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Form local para checklist de supervisão manual por sala+chefe (offline/local) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         <div className="space-y-1">
           <label className="text-[9px] font-semibold text-muted-foreground">
@@ -394,7 +501,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
             Sala
           </label>
           <Input
-            placeholder="Ex: 101, 2º andar, A-05..."
+            placeholder="Ex: 101, 2º andar..."
             value={sala}
             onChange={(e) => setSala(e.target.value)}
             className="text-[10px] rounded-2xl h-9 py-1.5"
@@ -402,10 +509,10 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         </div>
         <div className="space-y-1">
           <label className="text-[9px] font-semibold text-muted-foreground">
-            Chefe de Sala
+            Chefe de Sala (observado)
           </label>
           <Input
-            placeholder="Nome do Chefe de Sala"
+            placeholder="Nome do Chefe observado"
             value={chefe}
             onChange={(e) => setChefe(e.target.value)}
             className="text-[10px] rounded-2xl h-9 py-1.5"
@@ -417,10 +524,10 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         <div className="card-elevated flex items-center gap-3 text-[9px]">
           <div className="flex-1">
             <div className="font-semibold text-xs">
-              Progresso desta sala
+              Progresso da supervisão presencial
             </div>
             <div className="text-muted-foreground">
-              {completedCount}/{totalItems} itens concluídos
+              {completedCount}/{totalItems} itens marcados
             </div>
             <div className="mt-1 h-1.5 w-full rounded-full bg-muted overflow-hidden">
               <div
@@ -441,10 +548,12 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         </div>
       ) : (
         <div className="card-elevated text-[9px] text-muted-foreground">
-          Informe a sala e o Chefe de Sala para iniciar o acompanhamento.
+          Informe sala e nome do Chefe de Sala para registrar a supervisão
+          presencial detalhada abaixo.
         </div>
       )}
 
+      {/* Checklist de supervisão manual (localStorage) */}
       <div className="space-y-3">
         {Object.entries(grouped).map(([block, items]) => (
           <div key={block} className="space-y-1.5">
