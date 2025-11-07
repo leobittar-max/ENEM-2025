@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, MouseEvent } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -35,15 +35,6 @@ interface SupervisionarPanelProps {
   onClose?: () => void;
 }
 
-/**
- * Painel de supervisão do Coordenador:
- * - Lista salas com barra de progresso (checklist Chefe de Sala).
- * - Ao expandir uma sala:
- *    - Mostra cabeçalho compacto.
- *    - Mostra responsáveis em lista com checkbox de presença.
- * - Apenas uma sala aberta por vez.
- * - Cliques em checkboxes e conteúdo interno NÃO fecham a sala.
- */
 export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   const [rooms, setRooms] = useState<RoomWithProgress[]>([]);
   const [roomItemsStatus, setRoomItemsStatus] = useState<
@@ -277,10 +268,6 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
     });
   }
 
-  const stopCardToggle = (event: MouseEvent) => {
-    event.stopPropagation();
-  };
-
   return (
     <div className="space-y-3 no-x-overflow">
       <div className="card-elevated flex items-start gap-3">
@@ -330,7 +317,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
                       : "border-border hover:bg-muted/40",
                   )}
                 >
-                  {/* Cabeçalho clicável para expandir/retrair */}
+                  {/* Cabeçalho: único lugar que abre/fecha */}
                   <button
                     type="button"
                     className="flex items-center gap-2 w-full text-left"
@@ -391,10 +378,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
                   </div>
 
                   {isSelected && (
-                    <div
-                      className="mt-1.5 border-t border-border/60 pt-1.5"
-                      onClick={stopCardToggle}
-                    >
+                    <div className="mt-1.5 border-t border-border/60 pt-1.5">
                       <RoomDetailHeader
                         room={room}
                         total={responsibles.length}
@@ -525,7 +509,6 @@ function ResponsiblesList({
                 <li
                   key={resp.id}
                   className="flex items-center gap-2 px-1.5 py-1 rounded-lg bg-muted/40"
-                  onClick={(e) => e.stopPropagation()}
                 >
                   <input
                     type="checkbox"
@@ -563,7 +546,6 @@ function ResponsiblesList({
                 <li
                   key={resp.id}
                   className="flex items-center gap-2 px-1.5 py-1 rounded-lg bg-muted/20"
-                  onClick={(e) => e.stopPropagation()}
                 >
                   <input
                     type="checkbox"
