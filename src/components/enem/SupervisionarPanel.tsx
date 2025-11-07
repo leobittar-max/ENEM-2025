@@ -176,6 +176,22 @@ const PresenceDayCard = ({
 }: PresenceDayCardProps) => {
   const presentCount = members.filter((m) => m.present).length;
 
+  const handleMarkAll = async () => {
+    if (!allowed || loading || members.length === 0) return;
+    const toMark = members.filter((m) => !m.present);
+    for (const m of toMark) {
+      await onToggleMember(m.id);
+    }
+  };
+
+  const handleUnmarkAll = async () => {
+    if (!allowed || loading || members.length === 0) return;
+    const toUnmark = members.filter((m) => m.present);
+    for (const m of toUnmark) {
+      await onToggleMember(m.id);
+    }
+  };
+
   return (
     <div className="rounded-2xl border bg-card px-3 py-2 shadow-sm">
       <button
@@ -220,6 +236,36 @@ const PresenceDayCard = ({
 
       {isOpen && (
         <div className="mt-2 space-y-1.5">
+          {/* Controles de marcar todos */}
+          <div className="flex flex-wrap gap-1.5 justify-end mb-1">
+            <button
+              type="button"
+              onClick={handleMarkAll}
+              disabled={!allowed || loading || members.length === 0}
+              className={cn(
+                "px-2 py-1 rounded-full text-[7px] md:text-[9px] border touch-target min-h-[24px]",
+                !allowed || loading || members.length === 0
+                  ? "bg-muted text-muted-foreground border-border cursor-not-allowed"
+                  : "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100",
+              )}
+            >
+              Marcar todos
+            </button>
+            <button
+              type="button"
+              onClick={handleUnmarkAll}
+              disabled={!allowed || loading || members.length === 0}
+              className={cn(
+                "px-2 py-1 rounded-full text-[7px] md:text-[9px] border touch-target min-h-[24px]",
+                !allowed || loading || members.length === 0
+                  ? "bg-muted text-muted-foreground border-border cursor-not-allowed"
+                  : "bg-red-50 text-red-700 border-red-300 hover:bg-red-100",
+              )}
+            >
+              Desmarcar todos
+            </button>
+          </div>
+
           {!allowed && (
             <div className="text-[8px] md:text-[9px] text-muted-foreground">
               O registro deste dia só ficará ativo na data oficial da aplicação.
