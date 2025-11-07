@@ -8,6 +8,7 @@ export interface TeamMember {
   function_name: string;
   name: string;
   cpf: string | null;
+  room_code: string | null;
 }
 
 export interface PresenceMember {
@@ -15,6 +16,7 @@ export interface PresenceMember {
   name: string;
   cpf: string | null;
   functionName: string;
+  roomCode: string | null;
   present: boolean;
 }
 
@@ -26,7 +28,6 @@ interface UseDayTeamPresenceResult {
 }
 
 const STORAGE_KEY = "enem2025_team_presence_v1";
-
 const OFFICIAL_DAYS = ["2025-11-09", "2025-11-16"];
 
 function loadLocal(): Record<string, Record<string, boolean>> {
@@ -45,6 +46,46 @@ function saveLocal(data: Record<string, Record<string, boolean>>) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
+function sortMembersForSupervision(list: PresenceMember[]): PresenceMember[] {
+  const withRoom = list.filter((m) => !!m.roomCode);
+  const withoutRoom = list.filter((m) => !m.roomCode);
+
+  // Ordena os que têm sala:
+  // 1) por código da sala (alfanumérico)
+  // 2) por função (para aproximar chefe/fiscal/aplicador)
+  // 3) por nome
+  const orderByFunction = (fn: string) => {
+    const f = fn.toLowerCase();
+    if (f.includes("chefe")) return 0;
+    if (f.includes("fiscal")) return 1;
+    if (f.includes("aplicador")) return 2;
+    if (f.includes("apoio")) return 3;
+    return 4;
+  };
+
+  withRoom.sort((a, b) => {
+    const roomA = (a.roomCode || "").toString();
+    const roomB = (b.roomCode || "").toString();
+    if (roomA !== roomB) {
+      return roomA.localeCompare(roomB, "pt-BR", { numeric: true });
+    }
+    const funcDiff =
+      orderByFunction(a.functionName) - orderByFunction(b.functionName);
+    if (funcDiff !== 0) return funcDiff;
+    return a.name.localeCompare(b.name, "pt-BR");
+  });
+
+  // Os que não têm sala ficam depois, ordenados por função e nome
+  withoutRoom.sort((a, b) => {
+    const fA = a.functionName.toLowerCase();
+    const fB = b.functionName.toLowerCase();
+    if (fA !== fB) return fA.localeCompare(fB, "pt-BR");
+    return a.name.localeCompare(b.name, "pt-BR");
+  });
+
+  return [...withRoom, ...withoutRoom];
+}
+
 export function useDayTeamPresence(date: string): UseDayTeamPresenceResult {
   const [loading, setLoading] = useState(true);
   const [members, setMembers] = useState<PresenceMember[]>([]);
@@ -61,10 +102,9 @@ export function useDayTeamPresence(date: string): UseDayTeamPresenceResult {
     async function load() {
       setLoading(true);
 
-      // Carrega membros
       const { data: teamData, error: teamError } = await supabase
         .from("team_members")
-        .select("id, role_group, function_name, name, cpf")
+        .select("id, role_group, function_name, name, cpf, room_code")
         .order("role_group", { ascending: true })
         .order("function_name", { ascending: true })
         .order("name", { ascending: true });
@@ -75,7 +115,6 @@ export function useDayTeamPresence(date: string): UseDayTeamPresenceResult {
         return;
       }
 
-      // Presença do Supabase para a data
       const { data: attData, error: attError } = await supabase
         .from("team_attendance")
         .select("member_id, date, present")
@@ -91,21 +130,22 @@ export function useDayTeamPresence(date: string): UseDayTeamPresenceResult {
       });
 
       const localForDay = localMap[date] || {};
-
-      // Merge: server tem prioridade; local complementa
       const merged: Record<string, boolean> = { ...localForDay, ...serverMap };
 
-      const list: PresenceMember[] = teamData.map((m: any) => ({
-        id: m.id,
-        name: m.name,
-        cpf: m.cpf,
-        functionName: m.function_name,
-        present: !!merged[m.id],
-      }));
+      const rawList: PresenceMember[] = (teamData as TeamMember[]).map(
+        (m) => ({
+          id: m.id,
+          name: m.name,
+          cpf: m.cpf,
+          functionName: m.function_name,
+          roomCode: m.room_code,
+          present: !!merged[m.id],
+        }),
+      );
 
-      setMembers(list);
+      const sorted = sortMembersForSupervision(rawList);
+      setMembers(sorted);
 
-      // Atualiza local com o merge (para esta data)
       const nextLocal = {
         ...localMap,
         [date]: {
@@ -142,10 +182,11 @@ export function useDayTeamPresence(date: string): UseDayTeamPresenceResult {
 
     const nextPresent = !member.present;
 
-    // Otimista local
     setMembers((prev) =>
-      prev.map((m) =>
-        m.id === memberId ? { ...m, present: nextPresent } : m,
+      sortMembersForSupervision(
+        prev.map((m) =>
+          m.id === memberId ? { ...m, present: nextPresent } : m,
+        ),
       ),
     );
 
@@ -159,17 +200,17 @@ export function useDayTeamPresence(date: string): UseDayTeamPresenceResult {
     );
 
     if (error) {
-      // Reverte em caso de erro
       setMembers((prev) =>
-        prev.map((m) =>
-          m.id === memberId ? { ...m, present: !nextPresent } : m,
+        sortMembersForSupervision(
+          prev.map((m) =>
+            m.id === memberId ? { ...m, present: !nextPresent } : m,
+          ),
         ),
       );
       showError("Não foi possível atualizar a presença. Tente novamente.");
       return;
     }
 
-    // Atualiza localStorage
     setLocalMap((prev) => {
       const next = {
         ...prev,

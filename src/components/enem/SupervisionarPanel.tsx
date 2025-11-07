@@ -33,7 +33,6 @@ interface RoomWithProgress {
 export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   const [openDay, setOpenDay] = useState<"d1" | "d2" | null>(null);
 
-  // Presença da equipe por dia
   const {
     loading: loadingD1,
     allowed: allowedD1,
@@ -59,11 +58,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
     [membersD2],
   );
 
-  // Progresso das salas (checklist Chefe de Sala)
-  const {
-    loadingRooms,
-    roomsProgress,
-  } = useRoomsChecklistProgress();
+  const { loadingRooms, roomsProgress } = useRoomsChecklistProgress();
 
   return (
     <div className="space-y-3 no-x-overflow">
@@ -77,8 +72,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
             Supervisionar Salas e Equipe
           </div>
           <p className="text-[10px] md:text-xs text-muted-foreground">
-            Veja em uma única tela quem está presente e o progresso dos checklists
-            de cada sala, para intervenção rápida durante a aplicação.
+            Controle rápido da presença da equipe e do avanço dos checklists por sala.
           </p>
         </div>
       </div>
@@ -91,7 +85,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         </div>
       )}
 
-      {/* Presença da Equipe - Dia 1 */}
+      {/* Presença - Dia 1 */}
       <PresenceDayCard
         label="Dia 09/11/2025 · 1º Dia"
         isOpen={openDay === "d1"}
@@ -103,7 +97,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
         complete={day1Complete}
       />
 
-      {/* Presença da Equipe - Dia 2 */}
+      {/* Presença - Dia 2 */}
       <PresenceDayCard
         label="Dia 16/11/2025 · 2º Dia"
         isOpen={openDay === "d2"}
@@ -121,7 +115,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
           Progresso dos checklists das salas
         </div>
         <p className="text-[8px] md:text-[9px] text-muted-foreground">
-          Baseado nos itens de checklist dos Chefes de Sala registrados no sistema.
+          Acompanhe o preenchimento dos itens pelos Chefes de Sala em cada sala.
         </p>
 
         {loadingRooms ? (
@@ -157,7 +151,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   );
 };
 
-/* ----------------- Presença da equipe por dia ----------------- */
+/* ---------- Presença da equipe por dia ---------- */
 
 interface PresenceDayCardProps {
   label: string;
@@ -184,7 +178,6 @@ const PresenceDayCard = ({
 
   return (
     <div className="rounded-2xl border bg-card px-3 py-2 shadow-sm">
-      {/* Cabeçalho do dia */}
       <button
         type="button"
         className="w-full flex items-center gap-2 text-left"
@@ -213,11 +206,9 @@ const PresenceDayCard = ({
         </span>
       </button>
 
-      {/* Resumo rápido */}
       <div className="mt-1 flex items-center justify-between text-[7px] md:text-[9px] text-muted-foreground">
         <span>
-          Membros:{" "}
-          <span className="font-semibold">{members.length}</span>
+          Membros: <span className="font-semibold">{members.length}</span>
         </span>
         <span>
           Presentes:{" "}
@@ -227,7 +218,6 @@ const PresenceDayCard = ({
         </span>
       </div>
 
-      {/* Lista expandida */}
       {isOpen && (
         <div className="mt-2 space-y-1.5">
           {!allowed && (
@@ -252,6 +242,7 @@ const PresenceDayCard = ({
                 name={m.name}
                 cpf={m.cpf}
                 functionName={m.functionName}
+                roomCode={m.roomCode}
                 present={m.present}
                 disabled={!allowed}
                 onToggle={onToggleMember}
@@ -269,6 +260,7 @@ interface MemberRowProps {
   name: string;
   cpf: string | null;
   functionName: string;
+  roomCode: string | null;
   present: boolean;
   disabled: boolean;
   onToggle: (memberId: string) => Promise<void>;
@@ -279,10 +271,13 @@ const MemberRow = ({
   name,
   cpf,
   functionName,
+  roomCode,
   present,
   disabled,
   onToggle,
 }: MemberRowProps) => {
+  const roomLabel = roomCode ? `Sala ${roomCode}` : null;
+
   return (
     <div
       className={cn(
@@ -292,9 +287,17 @@ const MemberRow = ({
     >
       <div className="flex-1 min-w-0">
         <div className="font-semibold text-foreground truncate">
-          {functionName} · {name}
+          {functionName}
+          {roomLabel && (
+            <span className="ml-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-muted text-[7px] text-muted-foreground">
+              {roomLabel}
+            </span>
+          )}
         </div>
         <div className="text-[7px] md:text-[8px] text-muted-foreground truncate">
+          {name}
+        </div>
+        <div className="text-[6px] md:text-[7px] text-muted-foreground truncate">
           CPF: {cpf || "não informado"}
         </div>
       </div>
@@ -316,7 +319,7 @@ const MemberRow = ({
   );
 };
 
-/* ----------------- Progresso dos checklists das salas ----------------- */
+/* ---------- Progresso dos checklists das salas ---------- */
 
 function useRoomsChecklistProgress() {
   const [loadingRooms, setLoadingRooms] = useState(true);
@@ -415,7 +418,6 @@ function useRoomsChecklistProgress() {
     };
   }, [today]);
 
-  // Realtime: atualiza progresso quando checklist_status mudar
   useEffect(() => {
     if (!totalChecklistItems) return;
 
@@ -505,50 +507,48 @@ function useRoomsChecklistProgress() {
   };
 }
 
-const RoomProgressRow = ({ room }: { room: RoomWithProgress }) => {
-  return (
-    <div className="rounded-2xl border bg-card px-3 py-2 flex flex-col gap-1.5">
-      <div className="flex items-center gap-2">
-        <div className="flex flex-col flex-1 min-w-0">
-          <span className="text-[9px] md:text-[10px] font-semibold">
-            Sala {room.code}
+const RoomProgressRow = ({ room }: { room: RoomWithProgress }) => (
+  <div className="rounded-2xl border bg-card px-3 py-2 flex flex-col gap-1.5">
+    <div className="flex items-center gap-2">
+      <div className="flex flex-col flex-1 min-w-0">
+        <span className="text-[9px] md:text-[10px] font-semibold">
+          Sala {room.code}
+        </span>
+        {room.label !== room.code && (
+          <span className="text-[7px] md:text-[8px] text-muted-foreground truncate">
+            {room.label}
           </span>
-          {room.label !== room.code && (
-            <span className="text-[7px] md:text-[8px] text-muted-foreground truncate">
-              {room.label}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-col items-end gap-0 leading-tight">
-          <span className="text-[6px] md:text-[8px] text-muted-foreground">
-            Checklist Chefe de Sala
-          </span>
-          <span className="text-[8px] md:text-[10px] font-semibold text-primary">
-            {room.percent}%{" "}
-            <span className="text-[6px] md:text-[8px] text-muted-foreground">
-              ({room.completed}/{room.total})
-            </span>
-          </span>
-        </div>
+        )}
       </div>
-      <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-        <div
-          className={cn(
-            "h-full rounded-full transition-all",
-            room.percent >= 80
-              ? "bg-emerald-500"
-              : room.percent >= 40
-              ? "bg-amber-400"
-              : "bg-red-400",
-          )}
-          style={{ width: `${room.percent}%` }}
-        />
+      <div className="flex flex-col items-end gap-0 leading-tight">
+        <span className="text-[6px] md:text-[8px] text-muted-foreground">
+          Checklist Chefe de Sala
+        </span>
+        <span className="text-[8px] md:text-[10px] font-semibold text-primary">
+          {room.percent}%{" "}
+          <span className="text-[6px] md:text-[8px] text-muted-foreground">
+            ({room.completed}/{room.total})
+          </span>
+        </span>
       </div>
     </div>
-  );
-};
+    <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+      <div
+        className={cn(
+          "h-full rounded-full transition-all",
+          room.percent >= 80
+            ? "bg-emerald-500"
+            : room.percent >= 40
+            ? "bg-amber-400"
+            : "bg-red-400",
+        )}
+        style={{ width: `${room.percent}%` }}
+      />
+    </div>
+  </div>
+);
 
-/* ----------------- Utils ----------------- */
+/* ---------- Utils ---------- */
 
 function getTodayISO(): string {
   const now = new Date();
