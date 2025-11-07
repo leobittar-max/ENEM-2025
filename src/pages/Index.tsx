@@ -33,7 +33,7 @@ const Index = () => {
     toggleChecklistItem,
     addOccurrence,
     resetAll,
-    downloadTextReport,
+    downloadPdfReport,
   } = useEnem2025();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -238,7 +238,7 @@ const Index = () => {
                   />
                   <TabItem
                     label="Relatório"
-                    icon="📊"
+                    icon="📑"
                     active={activeTab === "report"}
                     onClick={() => setActiveTab("report")}
                   />
@@ -302,7 +302,7 @@ const Index = () => {
                       preparationItems={preparationItems}
                       morningItems={morningItems}
                       closingItems={closingItems}
-                      onDownloadTxt={downloadTextReport}
+                      onDownloadPdf={downloadPdfReport}
                       onReset={resetAll}
                     />
                   )}
@@ -320,10 +320,10 @@ const Index = () => {
                 <Button
                   className="flex-1 touch-target text-xs font-semibold"
                   variant="outline"
-                  onClick={downloadTextReport}
-                  aria-label="Exportar relatório do local em arquivo TXT"
+                  onClick={downloadPdfReport}
+                  aria-label="Baixar relatório completo em PDF"
                 >
-                  📄 Exportar Relatório
+                  📑 Exportar Relatório PDF
                 </Button>
                 <Button
                   className="w-24 touch-target text-xs font-semibold"

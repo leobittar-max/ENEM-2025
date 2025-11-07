@@ -14,7 +14,7 @@ interface ReportTabProps {
   preparationItems: ChecklistItem[];
   morningItems: ChecklistItem[];
   closingItems: ChecklistItem[];
-  onDownloadTxt: () => void;
+  onDownloadPdf: () => void;
   onReset: () => void;
 }
 
@@ -27,7 +27,7 @@ export const ReportTab = ({
   preparationItems,
   morningItems,
   closingItems,
-  onDownloadTxt,
+  onDownloadPdf,
   onReset,
 }: ReportTabProps) => {
   const critical = occurrences.filter((o) => o.critical).length;
@@ -154,8 +154,8 @@ export const ReportTab = ({
       </div>
 
       <div className="flex flex-wrap gap-2 pt-1">
-        <Button size="sm" onClick={onDownloadTxt}>
-          📄 Exportar Relatório TXT
+        <Button size="sm" onClick={onDownloadPdf}>
+          📑 Exportar Relatório PDF Completo
         </Button>
         <Button
           size="sm"
