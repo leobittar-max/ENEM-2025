@@ -9,6 +9,7 @@ import { ClosingTab } from "@/components/enem/ClosingTab";
 import { ReportTab } from "@/components/enem/ReportTab";
 import { LogPanel } from "@/components/enem/LogPanel";
 import { SupervisionarPanel } from "@/components/enem/SupervisionarPanel";
+import { TeamPresencePanel } from "@/components/enem/TeamPresencePanel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MadeWithDyad } from "@/components/made-with-dyad";
@@ -127,7 +128,7 @@ const Index = () => {
 
           {/* Main area */}
           <div className="flex-1 flex flex-col app-safe-area">
-            {/* AppBar (oculta apenas se for histórico ou supervisão? Não, mantemos para contexto) */}
+            {/* AppBar */}
             {!showHistory && !showSupervision && (
               <header className="sticky top-0 z-30 bg-card shadow-sm border-b border-border px-4 pt-2 pb-2 flex items-center gap-3">
                 <button
@@ -168,7 +169,7 @@ const Index = () => {
               </header>
             )}
 
-            {/* TabBar Android-like (apenas na visão principal) */}
+            {/* TabBar principal */}
             {!showHistory && !showSupervision && (
               <nav className="bg-card px-2 pb-2 pt-1 border-b border-border">
                 <div className="tabbar-scroll">
@@ -267,6 +268,9 @@ const Index = () => {
                     />
                   )}
 
+                  {/* Painel de presença da equipe logo abaixo do conteúdo principal */}
+                  <TeamPresencePanel />
+
                   <div className="pt-2">
                     <MadeWithDyad />
                   </div>
@@ -274,7 +278,7 @@ const Index = () => {
               )}
             </main>
 
-            {/* Rodapé mobile (somente visão principal) */}
+            {/* Rodapé mobile */}
             {!showHistory && !showSupervision && (
               <div className="px-4 pb-2 pt-1 flex gap-2 md:hidden bg-background border-t border-border">
                 <Button
