@@ -146,93 +146,144 @@ export const DuringTab = ({
 
   return (
     <div className="space-y-4">
-      {/* HERO TIMER */}
-      <div className="relative overflow-hidden rounded-3xl border border-primary/15 bg-gradient-to-br from-primary/4 via-background to-primary/5 shadow-lg px-4 py-4 flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-primary/80">
+      {/* HERO TIMER - card principal */}
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-3xl px-4 py-4 md:px-6 md:py-5",
+          "border border-primary/12 bg-gradient-to-br from-primary/3 via-background to-primary/5",
+          "shadow-[0_10px_40px_rgba(15,23,42,0.16)] flex flex-col gap-3",
+        )}
+      >
+        {/* Label superior + status */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/6 text-primary text-[0.6rem] font-semibold tracking-[0.18em] uppercase">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               Prova em andamento
-            </span>
-            <span className="text-[0.98rem] font-semibold text-foreground">
-              Tempo restante para o encerramento
-            </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-[1rem] md:text-[1.05rem] font-semibold text-foreground">
+                Tempo restante para o encerramento
+              </h2>
+            </div>
           </div>
-          <span className="text-3xl md:text-4xl">🕒</span>
+
+          <div
+            className={cn(
+              "flex flex-col items-center justify-center",
+              "h-10 w-10 md:h-11 md:w-11 rounded-2xl bg-primary/8",
+              "shadow-[0_4px_14px_rgba(41,98,255,0.28)]",
+            )}
+          >
+            <span className="text-xl md:text-2xl">🕒</span>
+          </div>
         </div>
 
-        <div className="flex items-baseline gap-2">
+        {/* Tempo + info lateral */}
+        <div className="flex items-end justify-between gap-3 flex-wrap">
           <div
             className={cn(
               "font-mono font-semibold leading-none",
-              "text-4xl xs:text-5xl md:text-6xl",
+              "text-[2.6rem] xs:text-[3rem] md:text-[3.4rem]",
               examRunning
-                ? "text-primary drop-shadow-[0_4px_14px_rgba(41,98,255,0.35)]"
-                : "text-muted-foreground",
+                ? "text-primary drop-shadow-[0_6px_22px_rgba(41,98,255,0.35)]"
+                : "text-slate-500",
             )}
           >
             {examTimeRemaining}
           </div>
-          <div className="flex flex-col gap-0.5 text-[0.7rem] text-muted-foreground">
-            <span>
+
+          <div className="flex flex-col items-end gap-0.5 text-[0.7rem] text-muted-foreground min-w-[120px]">
+            <div>
               Decorridos:{" "}
               <span className="font-semibold text-foreground">
                 {examElapsedLabel}
               </span>
-            </span>
-            <span>
+            </div>
+            <div>
               Brasília agora:{" "}
               <span className="font-semibold text-primary">
                 {saoPauloTime}
               </span>
-            </span>
+            </div>
+            <div className="mt-1">
+              {examRunning ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[0.6rem] font-semibold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
+                  Contagem ativa
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[0.6rem] font-semibold">
+                  ⏯ Pronto para iniciar
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
+        {/* Presença equipe - barra chamativa */}
         <div className="mt-1 space-y-1.5">
           <div className="flex items-center justify-between text-[0.68rem] text-muted-foreground">
             <span>Presença da equipe</span>
-            <span className="font-semibold text-emerald-600">
+            <span
+              className={cn(
+                "font-semibold",
+                presencePercent >= 80
+                  ? "text-emerald-600"
+                  : presencePercent >= 40
+                  ? "text-amber-600"
+                  : "text-red-600",
+              )}
+            >
               {stats.present} presentes · {presencePercent}%
             </span>
           </div>
-          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+          <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden">
             <div
               className={cn(
-                "h-full rounded-full transition-all",
+                "h-full rounded-full transition-all duration-500",
                 presencePercent >= 80
-                  ? "bg-emerald-500"
+                  ? "bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400"
                   : presencePercent >= 40
-                  ? "bg-amber-400"
-                  : "bg-red-400",
+                  ? "bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400"
+                  : "bg-gradient-to-r from-red-400 via-red-500 to-red-400",
               )}
               style={{ width: `${presencePercent}%` }}
             />
           </div>
         </div>
 
-        <div className="mt-1 flex flex-wrap items-center gap-2">
+        {/* Ações e dicas */}
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           {!examRunning && (
             <Button
               size="sm"
-              className="rounded-full px-4 py-2 text-[0.78rem] font-semibold bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
+              className={cn(
+                "rounded-full px-5 py-2 text-[0.8rem] font-semibold",
+                "bg-primary text-primary-foreground",
+                "shadow-[0_8px_22px_rgba(41,98,255,0.38)] hover:bg-primary/90",
+              )}
               onClick={onStartExamManually}
             >
-              ▶ Iniciar contagem manualmente
+              <span className="mr-1.5 text-[0.9rem]">▶</span>
+              Iniciar contagem manualmente
             </Button>
           )}
+
           {examRunning && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 text-emerald-700 text-[0.7rem] px-3 py-1 font-semibold">
-              ● Contagem ativa · alertas automáticos habilitados
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/6 text-primary text-[0.7rem] px-3 py-1 font-medium">
+              ✅ Alertas automáticos habilitados para marcos de tempo
             </span>
           )}
-          {isIdle && (
-            <span className="text-[0.68rem] text-muted-foreground">
-              A contagem inicia automaticamente no horário oficial ou pode ser iniciada manualmente.
-            </span>
-          )}
+
+          <span className="text-[0.66rem] text-muted-foreground">
+            Use este painel como referência rápida para decisões durante a prova.
+          </span>
         </div>
 
-        <div className="pointer-events-none absolute -right-10 -bottom-10 h-24 w-24 rounded-full bg-primary/8 blur-2xl" />
+        {/* Glow de fundo */}
+        <div className="pointer-events-none absolute -right-10 -bottom-10 h-24 w-24 rounded-full bg-primary/10 blur-3xl" />
+        <div className="pointer-events-none absolute -left-12 -top-10 h-16 w-16 rounded-full bg-secondary/20 blur-3xl" />
       </div>
 
       {/* Aviso rápido */}
@@ -240,7 +291,7 @@ export const DuringTab = ({
         <span className="mt-0.5">📢</span>
         <p className="text-[0.72rem] text-muted-foreground">
           Registre ocorrências em tempo real; o sistema usa o relógio de Brasília e a contagem
-          da prova para sugerir ações no momento certo.
+          da prova para apoiar decisões rápidas do coordenador.
         </p>
       </div>
 
@@ -294,7 +345,6 @@ export const DuringTab = ({
             </SelectContent>
           </Select>
 
-          {/* Campo para tipo manual somente quando selecionado */}
           {selectedType === "custom" && (
             <Input
               placeholder="Digite o tipo de ocorrência (ex: Situação específica deste local)"
@@ -309,7 +359,7 @@ export const DuringTab = ({
         <div className="space-y-1">
           <Label className="text-[0.7rem]">Descrição detalhada</Label>
           <Textarea
-            placeholder="Descreva o que ocorreu, local/sala envolvida, horário e providências adotadas..."
+            placeholder="Descreva o que ocorreu, sala/local envolvido, horário e quais providências foram tomadas..."
             value={form.description}
             onChange={(e) =>
               setForm((f) => ({ ...f, description: e.target.value }))
