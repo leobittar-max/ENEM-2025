@@ -150,7 +150,7 @@
 }
 
 .tab-item {
-  @apply inline-flex flex-col items-center justify-center gap-0.25 px-3 py-2 rounded-full text-[0.7rem]
+  @apply inline-flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-full text-[0.7rem]
     text-muted-foreground touch-target;
   flex-shrink: 0;
 }
