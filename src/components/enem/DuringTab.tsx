@@ -118,10 +118,9 @@ export const DuringTab = ({
     const finalType =
       selectedType === "custom"
         ? customType.trim()
-        : selectedType || form.type.trim();
+        : selectedType.trim();
 
     if (!finalType) {
-      // Mantém comportamento simples: exige um tipo antes de salvar
       return;
     }
 
@@ -131,7 +130,6 @@ export const DuringTab = ({
       critical: form.critical,
     });
 
-    // Reset amigável
     setForm({ type: "", description: "", critical: false });
     setSelectedType("");
     setCustomType("");
@@ -255,7 +253,7 @@ export const DuringTab = ({
         {/* Tipo com dropdown amplo */}
         <div className="space-y-1">
           <Label className="text-[0.7rem]">
-            Tipo de Ocorrência (selecione ou escreva)
+            Tipo de Ocorrência (selecione ou escolha "Outro" para digitar)
           </Label>
           <Select
             value={selectedType}
@@ -296,25 +294,13 @@ export const DuringTab = ({
             </SelectContent>
           </Select>
 
-          {/* Campo para tipo manual quando selecionado */}
+          {/* Campo para tipo manual somente quando selecionado */}
           {selectedType === "custom" && (
             <Input
               placeholder="Digite o tipo de ocorrência (ex: Situação específica deste local)"
               value={customType}
               onChange={(e) => setCustomType(e.target.value)}
               className="mt-1 h-10 text-[0.78rem]"
-            />
-          )}
-
-          {/* Fallback: se ninguém escolher no select, permite digitar tipo direto */}
-          {selectedType === "" && (
-            <Input
-              placeholder="Ou digite rapidamente o tipo (opcional, se não for usar a lista acima)"
-              value={form.type}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, type: e.target.value }))
-              }
-              className="mt-1 h-9 text-[0.72rem]"
             />
           )}
         </div>
