@@ -29,27 +29,54 @@ export const InfoDialog = ({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary shadow-sm hover:bg-primary/20 transition-colors"
+        className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/12 text-[0.75rem] font-semibold text-primary shadow-sm hover:bg-primary/18 transition-colors"
         aria-label={triggerLabel || "Ver detalhes do procedimento"}
       >
         {triggerIcon}
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md w-[92vw] sm:w-full bg-card/95 backdrop-blur shadow-2xl border border-border/80 rounded-3xl p-5">
+        <DialogContent
+          className="
+            max-w-xl w-[94vw] sm:w-[90vw]
+            max-h-[80vh]
+            bg-card/98 backdrop-blur-xl
+            shadow-2xl border border-border/80
+            rounded-3xl p-6
+            flex flex-col gap-3
+          "
+        >
           <DialogHeader>
-            <DialogTitle className="text-sm font-semibold flex items-center gap-2">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px]">
+            <DialogTitle className="text-[1rem] font-semibold flex items-center gap-2">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-[0.85rem]">
                 i
               </span>
-              <span>{title}</span>
+              <span className="leading-snug">
+                {title}
+              </span>
             </DialogTitle>
-            <DialogDescription className="mt-2 text-[10px] leading-relaxed text-muted-foreground whitespace-pre-line">
+            <DialogDescription
+              className="
+                mt-3
+                text-[0.9rem]
+                leading-relaxed
+                text-muted-foreground
+                whitespace-pre-line
+              "
+            >
               {body}
             </DialogDescription>
           </DialogHeader>
+
           {sourceLabel && (
-            <div className="mt-3 text-[8px] text-muted-foreground/80 border-t border-border/60 pt-2">
+            <div
+              className="
+                mt-1.5 pt-2
+                text-[0.7rem]
+                text-muted-foreground/80
+                border-t border-border/60
+              "
+            >
               {sourceLabel}
             </div>
           )}
