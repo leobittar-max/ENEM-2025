@@ -83,10 +83,16 @@ const RoomChecklistPage = () => {
             Sala {roomCode} não encontrada
           </div>
           <p className="text-[10px] text-muted-foreground">
-            Verifique se o endereço está correto. Exemplo:
+            Verifique se o endereço está correto. Exemplos válidos:
             <br />
-            <span className="font-mono text-[9px]">
-              enem2025-beta.vercel.app/101
+            <span className="font-mono text-[9px] block">
+              https://enem-2025-kohl.vercel.app/101
+            </span>
+            <span className="font-mono text-[9px] block">
+              https://enem-2025-kohl.vercel.app/102
+            </span>
+            <span className="font-mono text-[9px] block">
+              https://enem-2025-kohl.vercel.app/103
             </span>
           </p>
           <Link
@@ -233,6 +239,22 @@ const RoomChecklistPage = () => {
         <p className="mt-1 text-[7px] text-muted-foreground text-center">
           As marcações ficam salvas somente neste dispositivo (offline friendly).
         </p>
+
+        {/* Destaque rápido dos links de acesso para exemplo */}
+        <div className="mt-3 text-[8px] text-muted-foreground">
+          Exemplos de acesso direto para Chefes de Sala:
+          <div className="mt-1 grid gap-0.5">
+            <span className="font-mono">
+              https://enem-2025-kohl.vercel.app/101
+            </span>
+            <span className="font-mono">
+              https://enem-2025-kohl.vercel.app/102
+            </span>
+            <span className="font-mono">
+              https://enem-2025-kohl.vercel.app/103
+            </span>
+          </div>
+        </div>
       </main>
     </div>
   );
