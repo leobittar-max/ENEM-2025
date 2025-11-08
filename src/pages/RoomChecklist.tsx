@@ -8,7 +8,7 @@ import {
 import { InfoDialog } from "@/components/enem/InfoDialog";
 import { cn } from "@/lib/utils";
 
-const STORAGE_PREFIX = "enem2025_room_checklist_v1";
+const STORAGE_PREFIX = "enem2025_room_checklist_v2";
 
 function buildStorageKey(roomCode: string) {
   return `${STORAGE_PREFIX}_${roomCode}`;
@@ -35,44 +35,32 @@ const RoomChecklistPage = () => {
   const roomCode = (params.roomCode || "").trim();
 
   const room = useMemo(() => getSimpleRoom(roomCode), [roomCode]);
-
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
-  // Carrega estado salvo localmente
   useEffect(() => {
     if (!roomCode) return;
     setChecked(loadChecked(roomCode));
   }, [roomCode]);
 
-  // Ordena: pendentes em cima, concluídos embaixo (não interfere nos dados)
   const sortedItems: RoomChecklistItem[] = useMemo(() => {
     const pending: RoomChecklistItem[] = [];
     const done: RoomChecklistItem[] = [];
     roomChecklistItems.forEach((item) => {
-      if (checked[item.id]) {
-        done.push(item);
-      } else {
-        pending.push(item);
-      }
+      if (checked[item.id]) done.push(item);
+      else pending.push(item);
     });
     return [...pending, ...done];
   }, [checked]);
 
   const total = roomChecklistItems.length;
-  const completedCount = roomChecklistItems.filter(
-    (i) => checked[i.id],
-  ).length;
+  const completedCount = roomChecklistItems.filter((i) => checked[i.id])
+    .length;
   const pendingCount = total - completedCount;
 
   const handleToggle = (id: string) => {
     setChecked((prev) => {
-      const next = {
-        ...prev,
-        [id]: !prev[id],
-      };
-      if (!next[id]) {
-        delete next[id];
-      }
+      const next = { ...prev, [id]: !prev[id] };
+      if (!next[id]) delete next[id];
       saveChecked(roomCode, next);
       return next;
     });
@@ -113,7 +101,7 @@ const RoomChecklistPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col no-x-overflow">
       {/* Cabeçalho fixo */}
       <header className="sticky top-0 z-20 bg-card/95 backdrop-blur border-b border-border px-4 pt-3 pb-2 shadow-sm">
         <div className="flex items-start gap-2">
@@ -122,7 +110,7 @@ const RoomChecklistPage = () => {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
-              {room.eventName} · Checklist Chefe de Sala
+              ENEM 2025 · Checklist Chefe de Sala
             </div>
             <div className="text-sm font-semibold truncate">
               Sala {room.code}
@@ -132,15 +120,11 @@ const RoomChecklistPage = () => {
             </div>
             <div className="mt-0.5 grid grid-cols-2 gap-x-4 gap-y-0.5 text-[8px] text-muted-foreground">
               <div>
-                <span className="font-semibold text-foreground">
-                  Dia:
-                </span>{" "}
+                <span className="font-semibold text-foreground">Dia:</span>{" "}
                 {room.dateLabel}
               </div>
               <div>
-                <span className="font-semibold text-foreground">
-                  Chefe:
-                </span>{" "}
+                <span className="font-semibold text-foreground">Chefe:</span>{" "}
                 {room.chiefName}
               </div>
               <div>
@@ -161,31 +145,40 @@ const RoomChecklistPage = () => {
         <p className="mt-2 text-[9px] text-muted-foreground">
           Este checklist foi elaborado com base nas orientações oficiais do
           Manual do Chefe de Sala do ENEM 2025. Marque cada item à medida que
-          as ações forem sendo cumpridas.
+          as ações forem sendo cumpridas. Itens concluídos ficam em cinza e
+          descem automaticamente, destacando o que ainda falta.
         </p>
       </header>
 
-      {/* Lista */}
+      {/* Lista de itens */}
       <main className="flex-1 px-4 pt-2 pb-4 space-y-2">
         {sortedItems.map((item) => {
-          const isChecked = checked[item.id];
+          const isChecked = !!checked[item.id];
           return (
             <div
               key={item.id}
               onClick={() => handleToggle(item.id)}
               className={cn(
-                "flex items-start gap-2 rounded-2xl border px-3 py-2 mb-1 select-none cursor-pointer transition-all duration-200",
+                "checklist-item mb-1 transition-all duration-200 cursor-pointer select-none",
                 isChecked
                   ? "bg-gray-100/95 border-gray-300 text-gray-500 shadow-none scale-[0.99]"
                   : "bg-card border-border text-foreground hover:bg-primary/5 hover:border-primary/30 hover:shadow-sm",
               )}
             >
+              <div className="flex flex-col items-center justify-center w-14">
+                <div className="text-[8px] font-semibold text-primary truncate">
+                  {item.hora_sugerida || "--"}
+                </div>
+                <div className="text-[7px] text-muted-foreground truncate">
+                  {item.fase}
+                </div>
+              </div>
               <input
                 type="checkbox"
                 checked={isChecked}
                 readOnly
                 className={cn(
-                  "mt-0.5 h-4 w-4 rounded border border-border cursor-pointer transition-colors",
+                  "h-4 w-4 rounded border border-border cursor-pointer mt-0.5 transition-colors",
                   isChecked && "border-gray-400 bg-gray-200",
                 )}
               />
@@ -193,7 +186,7 @@ const RoomChecklistPage = () => {
                 <div className="flex items-start gap-1.5">
                   <div className="flex-1 min-w-0">
                     <div className="text-[10px] font-semibold leading-snug">
-                      {item.title}
+                      {item.titulo}
                       {item.critical && (
                         <span className="ml-1 text-[9px] text-destructive">
                           ⚡
@@ -201,14 +194,16 @@ const RoomChecklistPage = () => {
                       )}
                     </div>
                     <div className="text-[8px] text-muted-foreground">
-                      Manual do Chefe de Sala · p. {item.manualPage}
+                      {item.papel || "Chefe de Sala/Aplicador"}
                     </div>
                   </div>
-                  <InfoDialog
-                    triggerIcon="i"
-                    title={item.title}
-                    body={`${item.description}\n\nPágina do Manual do Chefe de Sala: ${item.manualPage}.`}
-                  />
+                  {item.info && (
+                    <InfoDialog
+                      triggerIcon="i"
+                      title={item.info.titulo || item.titulo}
+                      body={`${item.info.corpo}\n\nFonte: Manual do ${item.info.fonte.manual}, p. ${item.info.fonte.pagina}.`}
+                    />
+                  )}
                 </div>
               </div>
             </div>
