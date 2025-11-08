@@ -11,6 +11,8 @@ interface SidebarProps {
   onExit: () => void;
   showBackToPanel?: boolean;
   onOpenSupervision: () => void;
+  nextExamCountdownLabel?: string;
+  nextExamCountdownValue?: string;
 }
 
 export const Sidebar = ({
@@ -24,7 +26,14 @@ export const Sidebar = ({
   onExit,
   showBackToPanel,
   onOpenSupervision,
+  nextExamCountdownLabel,
+  nextExamCountdownValue,
 }: SidebarProps) => {
+  const countdownLabel =
+    nextExamCountdownLabel || "Próximo dia de provas";
+  const countdownValue =
+    nextExamCountdownValue || "--:--:--";
+
   return (
     <aside className="flex h-full w-72 flex-col gap-4 border-r border-border bg-sidebar px-4 py-4 text-sm shadow-sm md:h-screen">
       <div className="flex items-start justify-between gap-2">
@@ -87,6 +96,19 @@ export const Sidebar = ({
               {currentStage}
             </span>
           </div>
+          <div className="mt-1.5 pt-1.5 border-t border-sidebar-border/40 flex flex-col gap-0.5">
+            <span className="text-[8px] text-sidebar-foreground/70">
+              Countdown para o próximo dia de provas
+            </span>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-[8px] text-sidebar-foreground/70 truncate">
+                {countdownLabel}
+              </span>
+              <span className="font-mono text-[10px] font-semibold text-primary">
+                {countdownValue}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -105,7 +127,6 @@ export const Sidebar = ({
         </div>
       )}
 
-      {/* Ações principais */}
       <div className="mt-3 space-y-2">
         <button
           type="button"
