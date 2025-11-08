@@ -34,7 +34,6 @@ const ChefeSalaPage = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground px-4 py-3 space-y-3 no-x-overflow">
-      {/* Cabeçalho */}
       <header className="card-elevated flex items-start gap-3">
         <div className="h-9 w-9 rounded-2xl bg-primary/10 flex items-center justify-center text-xl">
           🎓
@@ -50,13 +49,11 @@ const ChefeSalaPage = () => {
             Chefe: {chiefName || "-"} · Data: {date}
           </div>
           <div className="mt-1 text-[8px] text-muted-foreground">
-            Use este painel apenas nesta sala. Itens marcados são enviados
-            ao Coordenador em tempo quase real.
+            Itens concluídos ficarão em cinza claro, mas você pode clicar novamente para ajustar.
           </div>
         </div>
       </header>
 
-      {/* Checklist */}
       <main className="space-y-3 pb-4">
         {groupByBlock(items).map(({ bloco, itens }) => (
           <section key={bloco} className="space-y-1.5">
@@ -64,53 +61,54 @@ const ChefeSalaPage = () => {
               {bloco}
             </div>
             <div className="space-y-1.5">
-              {itens.map((item) => (
-                <div
-                  key={item.id}
-                  className={cn(
-                    "flex items-start gap-2 rounded-2xl border bg-card px-3 py-2 shadow-sm transition-colors",
-                    item.checked &&
-                      "border-primary/40 bg-primary/5 opacity-70",
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    className="mt-1 h-4 w-4 rounded border border-border cursor-pointer"
-                    checked={item.checked}
-                    onChange={() => toggleItem(item.id)}
-                    aria-label={`Marcar item ${item.id} como concluído`}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start gap-1.5">
-                      <div className="flex-1 min-w-0">
-                        <div
-                          className={cn(
-                            "text-[10px] font-semibold text-foreground",
-                            item.checked &&
-                              "line-through text-muted-foreground",
-                          )}
-                        >
-                          {item.id} · {item.titulo}
-                        </div>
-                        {item.updated_at && (
-                          <div className="text-[8px] text-muted-foreground">
-                            Atualizado em {formatTime(item.updated_at)}
+              {itens.map((item) => {
+                const isChecked = item.checked;
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => toggleItem(item.id)}
+                    className={cn(
+                      "flex items-start gap-2 rounded-2xl border px-3 py-2 shadow-sm transition-colors cursor-pointer select-none bg-card",
+                      isChecked
+                        ? "bg-gray-100 border-gray-300 text-gray-500"
+                        : "border-border text-foreground hover:bg-muted/70",
+                    )}
+                  >
+                    <input
+                      type="checkbox"
+                      className={cn(
+                        "mt-1 h-4 w-4 rounded border border-border cursor-pointer",
+                        isChecked && "border-gray-400",
+                      )}
+                      checked={isChecked}
+                      readOnly
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-1.5">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[10px] font-semibold truncate">
+                            {item.id} · {item.titulo}
                           </div>
-                        )}
+                          {item.updated_at && (
+                            <div className="text-[8px] text-muted-foreground">
+                              Atualizado em {formatTime(item.updated_at)}
+                            </div>
+                          )}
+                        </div>
+                        <InfoDialog
+                          triggerIcon="i"
+                          title={item.titulo}
+                          body={`${item.corpo}${
+                            item.fonte_manual && item.fonte_pagina
+                              ? `\n\nFonte: Manual do ${item.fonte_manual}, p.${item.fonte_pagina}.`
+                              : ""
+                          }`}
+                        />
                       </div>
-                      <InfoDialog
-                        triggerIcon="i"
-                        title={item.titulo}
-                        body={`${item.corpo}${
-                          item.fonte_manual && item.fonte_pagina
-                            ? `\n\nFonte: Manual do ${item.fonte_manual}, p.${item.fonte_pagina}.`
-                            : ""
-                        }`}
-                      />
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         ))}

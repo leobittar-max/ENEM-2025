@@ -26,7 +26,7 @@ export const MorningTab = ({
             Manhã do exame · {diaLabel}
           </div>
           <p className="text-[10px] text-muted-foreground">
-            Acompanhe chegadas, portões e distribuição de material. Itens marcados ficam levemente apagados para facilitar a leitura do que falta.
+            Itens concluídos ficam em cinza claro, para evidenciar rapidamente o que ainda precisa ser feito.
           </p>
         </div>
       </div>
@@ -37,9 +37,12 @@ export const MorningTab = ({
           return (
             <div
               key={item.id}
+              onClick={() => onToggle(item.id)}
               className={cn(
-                "checklist-item transition-colors",
-                isChecked && "bg-primary/3 border-primary/30 opacity-70",
+                "checklist-item transition-colors cursor-pointer select-none",
+                isChecked
+                  ? "bg-gray-100 border-gray-300 text-gray-500"
+                  : "bg-card border-border text-foreground hover:bg-muted/70",
               )}
             >
               <div className="flex flex-col items-center justify-center w-10">
@@ -49,20 +52,17 @@ export const MorningTab = ({
               </div>
               <input
                 type="checkbox"
-                className="h-5 w-5 rounded border border-border cursor-pointer touch-target"
+                className={cn(
+                  "h-5 w-5 rounded border border-border cursor-pointer mt-0.5",
+                  isChecked && "border-gray-400",
+                )}
                 checked={isChecked}
-                onChange={() => onToggle(item.id)}
-                aria-label={`Marcar "${item.text}" como concluído`}
+                readOnly
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-start gap-1.5">
                   <div className="flex-1 min-w-0">
-                    <div
-                      className={cn(
-                        "checklist-title",
-                        isChecked && "line-through text-muted-foreground",
-                      )}
-                    >
+                    <div className="checklist-title">
                       {item.text}
                       {item.critical && (
                         <span className="ml-1 text-[9px] text-destructive">
@@ -70,12 +70,7 @@ export const MorningTab = ({
                         </span>
                       )}
                     </div>
-                    <div
-                      className={cn(
-                        "checklist-subtitle",
-                        isChecked && "text-muted-foreground/80",
-                      )}
-                    >
+                    <div className="checklist-subtitle">
                       {item.role || "Equipe"} · Janela da manhã
                     </div>
                   </div>

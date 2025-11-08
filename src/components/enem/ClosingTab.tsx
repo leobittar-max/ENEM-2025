@@ -26,7 +26,7 @@ export const ClosingTab = ({
             Encerramento do dia
           </div>
           <p className="text-[10px] text-muted-foreground">
-            Foque nos itens críticos com lacres, malotes e documentação; os itens concluídos aparecem levemente apagados.
+            Itens concluídos ficam em cinza claro, como finalizados; críticos não concluídos permanecem em maior destaque.
           </p>
         </div>
       </div>
@@ -37,28 +37,28 @@ export const ClosingTab = ({
           return (
             <div
               key={item.id}
+              onClick={() => onToggle(item.id)}
               className={cn(
-                "checklist-item transition-colors",
-                isChecked && "bg-primary/3 border-primary/30 opacity-70",
+                "checklist-item transition-colors cursor-pointer select-none",
+                isChecked
+                  ? "bg-gray-100 border-gray-300 text-gray-500"
+                  : "bg-card border-border text-foreground hover:bg-muted/70",
                 item.critical && !isChecked && "border-amber-400/80",
               )}
             >
               <input
                 type="checkbox"
-                className="h-5 w-5 rounded border border-border cursor-pointer touch-target"
+                className={cn(
+                  "h-5 w-5 rounded border border-border cursor-pointer mt-0.5",
+                  isChecked && "border-gray-400",
+                )}
                 checked={isChecked}
-                onChange={() => onToggle(item.id)}
-                aria-label={`Marcar "${item.text}" como concluído`}
+                readOnly
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-start gap-1.5">
                   <div className="flex-1 min-w-0">
-                    <div
-                      className={cn(
-                        "checklist-title",
-                        isChecked && "line-through text-muted-foreground",
-                      )}
-                    >
+                    <div className="checklist-title">
                       {item.text}
                       {item.critical && (
                         <span className="ml-1 text-[9px] text-destructive">
@@ -66,12 +66,7 @@ export const ClosingTab = ({
                         </span>
                       )}
                     </div>
-                    <div
-                      className={cn(
-                        "checklist-subtitle",
-                        isChecked && "text-muted-foreground/80",
-                      )}
-                    >
+                    <div className="checklist-subtitle">
                       {item.role || "Coordenador"} · Encerramento
                     </div>
                   </div>
