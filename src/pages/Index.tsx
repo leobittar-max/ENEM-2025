@@ -34,6 +34,8 @@ const Index = () => {
     addOccurrence,
     resetAll,
     downloadPdfReport,
+    nextExamCountdownLabel,
+    nextExamCountdownValue,
   } = useEnem2025();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -131,6 +133,8 @@ const Index = () => {
               onExit={handleExit}
               showBackToPanel={showHistory || showSupervision}
               onOpenSupervision={handleOpenSupervision}
+              nextExamCountdownLabel={nextExamCountdownLabel}
+              nextExamCountdownValue={nextExamCountdownValue}
             />
           </div>
 
@@ -156,6 +160,8 @@ const Index = () => {
                   onExit={handleExit}
                   showBackToPanel={showHistory || showSupervision}
                   onOpenSupervision={handleOpenSupervision}
+                  nextExamCountdownLabel={nextExamCountdownLabel}
+                  nextExamCountdownValue={nextExamCountdownValue}
                 />
               </div>
               <div

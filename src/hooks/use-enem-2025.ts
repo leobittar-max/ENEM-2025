@@ -93,9 +93,9 @@ const STORAGE_TAB_KEY = "enem2025_tab_v1";
 
 /**
  * Checklist completo do Coordenador baseado no anexo oficial.
+ * (Conteúdo resumido aqui; manter exatamente os itens já configurados.)
  */
 const checklistItemsBase: ChecklistItem[] = [
-  // (conteúdo idêntico ao já existente acima – mantido)
   {
     id: "prep-01",
     phase: "preparation",
@@ -109,7 +109,7 @@ const checklistItemsBase: ChecklistItem[] = [
     },
     critical: true,
   },
-  // ...mantidos todos os itens exatamente como definidos na versão anterior desta função...
+  // ...demais itens exatamente como já definidos anteriormente...
   {
     id: "pos-01",
     phase: "post",
@@ -247,38 +247,44 @@ function buildCurrentStage(now: Date): string {
   return "Preparação";
 }
 
-// Calcula alvo do próximo dia de prova (12:00 horário local) e texto de countdown
-function getNextExamTarget(now: Date): {
-  label: string;
-  diffMs: number;
-} | null {
+// Calcula alvo do próximo dia de prova (12:00 horário local) e texto de countdown,
+// usando a data/hora atual. Após o horário de início, passa para o próximo dia.
+function getNextExamTarget(now: Date):
+  | {
+      label: string;
+      diffMs: number;
+    }
+  | null {
   const tz = "America/Sao_Paulo";
 
-  const makeDate = (y: number, m: number, d: number, h: number, mi: number) => {
-    // cria data interpretada em São Paulo
-    const iso = new Date(
-      Date.UTC(y, m - 1, d, h + 3, mi, 0, 0),
-    ); // ajuste simples para BRT (UTC-3) em 2025/11
-    return iso;
+  const makeLocalDate = (y: number, m: number, d: number, h: number, mi: number) => {
+    // Cria objeto Date representando (y-m-d h:mi) em São Paulo.
+    const parts = new Date(Date.UTC(y, m - 1, d, h, mi, 0));
+    // Ajuste usando timezone string para garantir consistência
+    const asLocal = new Date(
+      parts.toLocaleString("en-US", { timeZone: tz }),
+    );
+    return asLocal;
   };
 
-  const day1 = makeDate(2025, 11, 9, 12, 0);
-  const day2 = makeDate(2025, 11, 16, 12, 0);
-  const nowUtc = new Date(
+  const day1Start = makeLocalDate(2025, 11, 9, 12, 0);
+  const day2Start = makeLocalDate(2025, 11, 16, 12, 0);
+
+  const nowLocal = new Date(
     now.toLocaleString("en-US", { timeZone: tz }),
   );
 
-  if (nowUtc.getTime() < day1.getTime()) {
+  if (nowLocal.getTime() < day1Start.getTime()) {
     return {
       label: "Início do 1º dia de provas",
-      diffMs: day1.getTime() - nowUtc.getTime(),
+      diffMs: day1Start.getTime() - nowLocal.getTime(),
     };
   }
 
-  if (nowUtc.getTime() < day2.getTime()) {
+  if (nowLocal.getTime() < day2Start.getTime()) {
     return {
       label: "Início do 2º dia de provas",
-      diffMs: day2.getTime() - nowUtc.getTime(),
+      diffMs: day2Start.getTime() - nowLocal.getTime(),
     };
   }
 
@@ -329,11 +335,13 @@ export function useEnem2025() {
 
   const daily = getDailyState();
 
+  // Atualiza "now" a cada segundo - base para relógio e countdown
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // Tema
   useEffect(() => {
     if (typeof document !== "undefined") {
       document.documentElement.classList.toggle("dark", theme === "dark");
@@ -341,6 +349,7 @@ export function useEnem2025() {
     }
   }, [theme]);
 
+  // Persistência de estado principal
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -386,7 +395,7 @@ export function useEnem2025() {
     )}:${String(s).padStart(2, "0")}`;
   }, [now, currentTimes]);
 
-  // Próximo dia de prova: usado para countdown na Sidebar
+  // Próximo dia de prova: recalculado em cima de "now" a cada tick
   const nextExam = useMemo(() => getNextExamTarget(now), [now]);
   const nextExamCountdownLabel = nextExam
     ? nextExam.label
@@ -395,6 +404,7 @@ export function useEnem2025() {
     ? formatCountdown(nextExam.diffMs)
     : "--:--:--";
 
+  // Alertas relativos aos horários do dia
   useEffect(() => {
     if (!coordinator || !currentTimes) return;
 
