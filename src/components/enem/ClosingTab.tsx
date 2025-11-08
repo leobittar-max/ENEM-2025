@@ -17,6 +17,8 @@ export const ClosingTab = ({
   stats,
   occurrences,
 }: ClosingTabProps) => {
+  const sortedItems = getSortedByCompletion(items, completed);
+
   return (
     <div className="space-y-3">
       <div className="card-elevated flex items-start gap-2">
@@ -26,31 +28,32 @@ export const ClosingTab = ({
             Encerramento do dia
           </div>
           <p className="text-[10px] text-muted-foreground">
-            Itens concluídos ficam em cinza claro, como finalizados; críticos não concluídos permanecem em maior destaque.
+            Itens concluídos ficam em cinza claro e são enviados para o final da lista;
+            críticos pendentes seguem em destaque.
           </p>
         </div>
       </div>
 
       <div className="space-y-2">
-        {items.map((item) => {
+        {sortedItems.map((item) => {
           const isChecked = completed.includes(item.id);
           return (
             <div
               key={item.id}
               onClick={() => onToggle(item.id)}
               className={cn(
-                "checklist-item transition-colors cursor-pointer select-none",
+                "checklist-item transition-colors transition-shadow duration-200 cursor-pointer select-none",
                 isChecked
-                  ? "bg-gray-100 border-gray-300 text-gray-500"
-                  : "bg-card border-border text-foreground hover:bg-muted/70",
+                  ? "bg-gray-100/95 border-gray-300 text-gray-500 shadow-none"
+                  : "bg-card border-border text-foreground hover:bg-primary/5 hover:border-primary/30 hover:shadow-sm",
                 item.critical && !isChecked && "border-amber-400/80",
               )}
             >
               <input
                 type="checkbox"
                 className={cn(
-                  "h-5 w-5 rounded border border-border cursor-pointer mt-0.5",
-                  isChecked && "border-gray-400",
+                  "h-5 w-5 rounded border border-border cursor-pointer mt-0.5 transition-colors",
+                  isChecked && "border-gray-400 bg-gray-200",
                 )}
                 checked={isChecked}
                 readOnly
@@ -97,6 +100,16 @@ export const ClosingTab = ({
     </div>
   );
 };
+
+function getSortedByCompletion(
+  items: ChecklistItem[],
+  completed: string[],
+): ChecklistItem[] {
+  const set = new Set(completed);
+  const pending = items.filter((i) => !set.has(i.id));
+  const done = items.filter((i) => set.has(i.id));
+  return [...pending, ...done];
+}
 
 const SummaryCard = ({
   label,
