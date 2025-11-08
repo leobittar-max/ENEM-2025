@@ -41,29 +41,29 @@ export const Sidebar = ({
   return (
     <aside
       className={cn(
-        "flex h-full flex-col gap-4 border-r border-border bg-sidebar px-4 py-4 shadow-sm md:h-screen",
-        // Mais largo no mobile; confortável em tablets e desktop
-        "w-[82vw] max-w-sm md:w-80",
+        "flex h-full flex-col gap-4 border-r border-border bg-sidebar px-4 py-5 shadow-sm md:h-screen",
+        // Mobile: ocupa a tela toda. Desktop: largura fixa confortável.
+        "w-full md:w-80 md:max-w-sm",
       )}
     >
       {/* Cabeçalho */}
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-3">
         <div className="space-y-0.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-sidebar-foreground/70">
-            <span className="text-lg">🎓</span>
+          <div className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sidebar-foreground/80">
+            <span className="text-xl">🎓</span>
             <span>ENEM 2025</span>
           </div>
-          <p className="text-[0.8rem] text-sidebar-foreground/80">
+          <p className="text-[0.9rem] text-sidebar-foreground/85">
             Painel do Coordenador de Local
           </p>
-          <p className="text-[0.65rem] text-sidebar-foreground/40">
+          <p className="text-[0.7rem] text-sidebar-foreground/45">
             v{APP_VERSION}
           </p>
         </div>
         {onCloseMobile && (
           <button
             onClick={onCloseMobile}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-sidebar-border/70 bg-white/80 text-[0.8rem] text-sidebar-foreground/70 shadow-sm hover:bg-gray-100 md:hidden"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-red-500/85 bg-white text-base font-bold text-red-600 shadow-md hover:bg-red-50 active:scale-95 md:hidden"
             aria-label="Fechar painel lateral"
           >
             ✕
@@ -74,11 +74,11 @@ export const Sidebar = ({
       {/* Local de aplicação */}
       <section className="space-y-1">
         <SectionLabel>Local de aplicação</SectionLabel>
-        <div className="rounded-2xl bg-white shadow-[0_4px_14px_rgba(15,23,42,0.06)] border border-sidebar-border/80 px-3.5 py-3">
-          <div className="text-[0.9rem] font-semibold text-sidebar-foreground">
+        <div className="rounded-2xl bg-white shadow-[0_4px_14px_rgba(15,23,42,0.06)] border border-sidebar-border/80 px-3.5 py-3.5">
+          <div className="text-[1rem] font-semibold text-sidebar-foreground">
             {coordinator.location || "-"}
           </div>
-          <div className="mt-0.5 text-[0.78rem] text-sidebar-foreground/70">
+          <div className="mt-0.5 text-[0.85rem] text-sidebar-foreground/75">
             {coordinator.city} - {coordinator.state}
           </div>
         </div>
@@ -87,11 +87,11 @@ export const Sidebar = ({
       {/* Coordenador */}
       <section className="space-y-1">
         <SectionLabel>Coordenador(a)</SectionLabel>
-        <div className="rounded-2xl bg-white border border-sidebar-border/80 px-3.5 py-3 shadow-[0_3px_10px_rgba(15,23,42,0.04)]">
-          <div className="text-[0.9rem] font-semibold text-sidebar-foreground">
+        <div className="rounded-2xl bg-white border border-sidebar-border/80 px-3.5 py-3.5 shadow-[0_3px_10px_rgba(15,23,42,0.04)]">
+          <div className="text-[1rem] font-semibold text-sidebar-foreground">
             {coordinator.name || "-"}
           </div>
-          <div className="mt-0.5 text-[0.75rem] text-sidebar-foreground/65 leading-snug">
+          <div className="mt-0.5 text-[0.8rem] text-sidebar-foreground/70 leading-snug">
             Responsável pelo fluxo operacional do local.
           </div>
         </div>
@@ -100,32 +100,32 @@ export const Sidebar = ({
       {/* Status em tempo real */}
       <section className="space-y-1">
         <SectionLabel>Status em tempo real</SectionLabel>
-        <div className="rounded-2xl bg-white/95 border border-sidebar-border/80 px-3.5 py-3 space-y-1.5 shadow-[0_4px_16px_rgba(15,23,42,0.06)]">
+        <div className="rounded-2xl bg-white/98 border border-sidebar-border/80 px-3.5 py-3.5 space-y-2 shadow-[0_4px_16px_rgba(15,23,42,0.06)]">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[0.75rem] text-sidebar-foreground/70">
+            <span className="text-[0.8rem] text-sidebar-foreground/75">
               Horário Brasília
             </span>
-            <span className="font-mono text-[0.82rem] font-semibold text-sidebar-foreground">
+            <span className="font-mono text-[0.95rem] font-semibold text-sidebar-foreground">
               {currentTime}
             </span>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[0.75rem] text-sidebar-foreground/70">
+            <span className="text-[0.8rem] text-sidebar-foreground/75">
               Etapa atual
             </span>
-            <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[0.7rem] font-semibold text-emerald-600">
+            <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-0.5 text-[0.78rem] font-semibold text-emerald-600">
               {currentStage}
             </span>
           </div>
-          <div className="mt-1.5 pt-1.5 border-t border-sidebar-border/40 space-y-0.5">
-            <span className="text-[0.7rem] text-sidebar-foreground/70">
+          <div className="mt-2 pt-2 border-t border-sidebar-border/40 space-y-0.5">
+            <span className="text-[0.78rem] text-sidebar-foreground/75">
               Countdown para o próximo dia de provas
             </span>
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-[0.68rem] text-sidebar-foreground/65 line-clamp-1">
+              <span className="text-[0.75rem] text-sidebar-foreground/65 line-clamp-1">
                 {countdownLabel}
               </span>
-              <span className="font-mono text-[0.82rem] font-semibold text-primary">
+              <span className="font-mono text-[0.95rem] font-semibold text-primary">
                 {countdownValue}
               </span>
             </div>
@@ -136,7 +136,7 @@ export const Sidebar = ({
       {/* Resumo rápido */}
       <section className="space-y-1">
         <SectionLabel>Resumo rápido</SectionLabel>
-        <div className="grid grid-cols-3 gap-1.5 text-center">
+        <div className="grid grid-cols-3 gap-1.75 text-center">
           <MiniStat label="Salas" value={coordinator.classrooms} />
           <MiniStat label="Participantes" value={coordinator.participants} />
           <MiniStat label="Ocorrências" value={totalOccurrences} />
@@ -145,13 +145,13 @@ export const Sidebar = ({
 
       {/* Modo simulação */}
       {coordinator.simulationMode && (
-        <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-yellow-400/60 bg-yellow-50 px-2.5 py-1 text-[0.7rem] text-yellow-800 shadow-[0_2px_8px_rgba(250,204,21,0.25)]">
+        <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-yellow-400/70 bg-yellow-50 px-3 py-1.5 text-[0.78rem] text-yellow-800 shadow-[0_2px_8px_rgba(250,204,21,0.25)]">
           🎮 Modo simulação ativo
         </div>
       )}
 
       {/* Ações principais */}
-      <section className="mt-2 space-y-1.5">
+      <section className="mt-2 space-y-1.75">
         <SidebarButton
           onClick={onOpenHistory}
           variant="soft"
@@ -178,15 +178,15 @@ export const Sidebar = ({
       </section>
 
       {/* Rodapé / sair */}
-      <div className="mt-auto space-y-2 pt-2">
+      <div className="mt-auto space-y-2.5 pt-2">
         <button
           type="button"
           onClick={onExit}
-          className="w-full rounded-2xl border border-red-300/90 bg-red-50 px-3.5 py-2.5 text-left text-[0.8rem] font-semibold text-red-700 hover:bg-red-100 hover:border-red-400 transition-colors flex items-center gap-2 shadow-[0_3px_10px_rgba(248,113,113,0.18)]"
+          className="w-full rounded-2xl border border-red-300/95 bg-red-50 px-3.5 py-3 text-left text-[0.9rem] font-semibold text-red-700 hover:bg-red-100 hover:border-red-500 transition-colors flex items-center gap-2 shadow-[0_3px_10px_rgba(248,113,113,0.22)]"
         >
           <span>⏏ Sair do Painel</span>
         </button>
-        <p className="text-[0.65rem] text-sidebar-foreground/55 leading-relaxed">
+        <p className="text-[0.72rem] text-sidebar-foreground/60 leading-relaxed">
           Use este painel como guia operacional. Em caso de dúvida, prevalecem
           sempre os comunicados e manuais oficiais do INEP.
         </p>
@@ -196,17 +196,17 @@ export const Sidebar = ({
 };
 
 const SectionLabel = ({ children }: { children: string }) => (
-  <div className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/55">
+  <div className="text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-sidebar-foreground/60">
     {children}
   </div>
 );
 
 const MiniStat = ({ label, value }: { label: string; value: number }) => (
-  <div className="rounded-2xl bg-white border border-sidebar-border/80 px-2 py-1.5 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex flex-col items-center justify-center gap-0.5">
-    <div className="text-[0.95rem] font-semibold text-sidebar-foreground">
+  <div className="rounded-2xl bg-white border border-sidebar-border/80 px-2.5 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.05)] flex flex-col items-center justify-center gap-0.25">
+    <div className="text-[1.05rem] font-semibold text-sidebar-foreground">
       {value}
     </div>
-    <div className="text-[0.65rem] text-sidebar-foreground/65">
+    <div className="text-[0.7rem] text-sidebar-foreground/65">
       {label}
     </div>
   </div>
@@ -228,12 +228,12 @@ const SidebarButton = ({
   variant = "soft",
 }: SidebarButtonProps) => {
   const base =
-    "w-full rounded-2xl px-3.5 py-2.25 text-left flex flex-col gap-0.25 border transition-colors shadow-[0_2px_8px_rgba(15,23,42,0.04)]";
+    "w-full rounded-2xl px-3.5 py-2.75 text-left flex flex-col gap-0.25 border transition-colors shadow-[0_2px_8px_rgba(15,23,42,0.05)]";
   const variants: Record<string, string> = {
     soft:
       "bg-white border-sidebar-border/80 hover:bg-gray-50 text-sidebar-foreground",
     "primary-soft":
-      "bg-primary/5 border-primary/35 text-primary hover:bg-primary/9",
+      "bg-primary/6 border-primary/40 text-primary hover:bg-primary/10",
     "success-soft":
       "bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100",
   };
@@ -244,14 +244,14 @@ const SidebarButton = ({
       onClick={onClick}
       className={cn(base, variants[variant])}
     >
-      <div className="flex items-center gap-1.5">
-        <span className="text-base leading-none">{icon}</span>
-        <span className="text-[0.82rem] font-semibold leading-tight">
+      <div className="flex items-center gap-1.75">
+        <span className="text-[1.1rem] leading-none">{icon}</span>
+        <span className="text-[0.9rem] font-semibold leading-tight">
           {label}
         </span>
       </div>
       {description && (
-        <span className="mt-0.5 text-[0.68rem] text-sidebar-foreground/60 leading-snug">
+        <span className="mt-0.25 text-[0.75rem] text-sidebar-foreground/65 leading-snug">
           {description}
         </span>
       )}
