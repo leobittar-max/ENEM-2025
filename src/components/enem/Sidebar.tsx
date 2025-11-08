@@ -1,4 +1,5 @@
 import { CoordinatorData, Occurrence } from "@/hooks/use-enem-2025";
+import { APP_VERSION } from "@/version";
 
 interface SidebarProps {
   coordinator: CoordinatorData;
@@ -44,6 +45,9 @@ export const Sidebar = ({
           </div>
           <p className="text-[10px] text-sidebar-foreground/70">
             Painel do Coordenador de Local
+          </p>
+          <p className="mt-0.5 text-[8px] text-sidebar-foreground/40">
+            v{APP_VERSION}
           </p>
         </div>
         {onCloseMobile && (
