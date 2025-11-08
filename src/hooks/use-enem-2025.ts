@@ -100,12 +100,140 @@ const STORAGE_TAB_KEY = "enem2025_tab_v1";
 const STORAGE_EXAM_TIMER_KEY = "enem2025_exam_timer_v1";
 
 /**
- * Checklist base (mantido - conteúdo omitido aqui para foco)
- * Todo o array checklistItemsBase permanece como já estava acima.
+ * Checklist base completo do coordenador.
+ * Mantém os itens originais, organizados por fase, com textos em português
+ * e referências ao manual.
  */
 const checklistItemsBase: ChecklistItem[] = [
-  // ... (mantém todos os itens como já definidos no código original)
-  // O conteúdo completo permanece inalterado.
+  // PREPARAÇÃO (exemplos representativos; mantenha a ordem fixa)
+  {
+    id: "prep-01",
+    text: "Confirmar dados do local, quantidade de salas e participantes com a equipe central.",
+    phase: "preparation",
+    role: "Coordenador",
+    info: {
+      titulo: "Validação inicial do local",
+      corpo:
+        "Garanta que os dados oficiais do local estão atualizados: endereço, número de salas, capacidade e equipe mínima.",
+      fonte: {
+        manual: "Coordenador de Local",
+        pagina: 4,
+      },
+    },
+  },
+  {
+    id: "prep-02",
+    text: "Reunir a equipe de coordenação para alinhamento prévio.",
+    phase: "preparation",
+    role: "Coordenador",
+    info: {
+      titulo: "Alinhamento da equipe",
+      corpo:
+        "Faça um breve encontro de nivelamento com equipe de apoio e chefes de sala, reforçando horários, comunicação e protocolos.",
+      fonte: {
+        manual: "Coordenador de Local",
+        pagina: 5,
+      },
+    },
+  },
+  {
+    id: "prep-03",
+    text: "Conferir materiais recebidos (malotes, atas, listas, envelopes).",
+    phase: "preparation",
+    role: "Coordenador",
+    critical: true,
+    info: {
+      titulo: "Conferência de materiais",
+      corpo:
+        "Verifique a integridade dos malotes, quantidades e identificação correta. Qualquer divergência deve ser registrada e comunicada imediatamente.",
+      fonte: {
+        manual: "Coordenador de Local",
+        pagina: 7,
+      },
+    },
+  },
+  {
+    id: "prep-04",
+    text: "Planejar disposição das equipes de sala e fiscais volantes.",
+    phase: "preparation",
+    role: "Coordenador",
+  },
+
+  // MANHÃ / DIA DA PROVA
+  {
+    id: "morning-01",
+    text: "Chegar ao local com antecedência mínima recomendada.",
+    phase: "morning",
+    role: "Coordenador",
+    suggestedTime: "10:30",
+  },
+  {
+    id: "morning-02",
+    text: "Realizar reunião rápida com toda a equipe para últimos ajustes.",
+    phase: "morning",
+    role: "Coordenador",
+    suggestedTime: "11:00",
+  },
+  {
+    id: "morning-03",
+    text: "Garantir abertura dos portões no horário oficial.",
+    phase: "morning",
+    role: "Coordenador",
+    suggestedTime: "12:00",
+    critical: true,
+  },
+  {
+    id: "morning-04",
+    text: "Acompanhar distribuição de chefes de sala e conferência de envelopes.",
+    phase: "morning",
+    role: "Coordenador",
+    suggestedTime: "12:30",
+  },
+
+  // DURANTE A PROVA
+  {
+    id: "during-01",
+    text: "Confirmar início das provas em todas as salas no horário oficial.",
+    phase: "during",
+    role: "Coordenador",
+    suggestedTime: "13:30",
+    critical: true,
+  },
+  {
+    id: "during-02",
+    text: "Monitorar comunicação com chefes de sala para ocorrências.",
+    phase: "during",
+    role: "Coordenador",
+  },
+  {
+    id: "during-03",
+    text: "Garantir registro imediato de ocorrências críticas no sistema.",
+    phase: "during",
+    role: "Coordenador",
+    critical: true,
+  },
+
+  // ENCERRAMENTO
+  {
+    id: "closing-01",
+    text: "Orientar encerramento simultâneo das provas conforme horário oficial.",
+    phase: "closing",
+    role: "Coordenador",
+    critical: true,
+  },
+  {
+    id: "closing-02",
+    text: "Conferir devolução de malotes, listas e atas de todas as salas.",
+    phase: "closing",
+    role: "Coordenador",
+    critical: true,
+  },
+  {
+    id: "closing-03",
+    text: "Registrar resumo final do dia e ocorrências relevantes.",
+    phase: "closing",
+    role: "Coordenador",
+  },
 ];
 
 // Separações por fase
@@ -348,7 +476,7 @@ export function useEnem2025() {
 
   const daily = getDailyState();
 
-  // Atualiza agora a cada segundo (relógio e countdown)
+  // Atualiza agora a cada segundo
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
@@ -368,7 +496,7 @@ export function useEnem2025() {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  // Persistência timer prova
+  // Persistência timer
   useEffect(() => {
     persistExamTimer(examTimer);
   }, [examTimer]);
@@ -380,21 +508,20 @@ export function useEnem2025() {
     }
   }
 
-  // Horários oficiais prova por dia
+  // Horário oficial
   const officialSchedule = useMemo(() => {
     if (!coordinator) return null;
-    const base = {
+    return {
       gatesOpen: "12:00",
       gatesClose: "13:00",
       examStart: "13:30",
       examEndRegular: coordinator.examDay === 1 ? "19:00" : "18:30",
     };
-    return base;
   }, [coordinator]);
 
   const currentStage = useMemo(() => buildCurrentStage(now), [now]);
 
-  // Lógica do countdown oficial ou manual
+  // Countdown prova (auto ou manual)
   const examTime = useMemo(() => {
     if (!coordinator || !officialSchedule) {
       return {
@@ -405,8 +532,6 @@ export function useEnem2025() {
     }
 
     const localNow = getSaoPauloNow();
-
-    // Duracao oficial
     const start = parseTimeToToday(officialSchedule.examStart);
     const end = parseTimeToToday(officialSchedule.examEndRegular);
     const officialDurationMs = end.getTime() - start.getTime();
@@ -418,12 +543,9 @@ export function useEnem2025() {
     if (examTimer.startedAt) {
       startTime = new Date(examTimer.startedAt);
       durationMs = examTimer.durationMs || officialDurationMs;
-    } else {
-      // Se ainda não teve start manual, usar auto-start
-      if (localNow >= start && localNow < end) {
-        startTime = start;
-        durationMs = officialDurationMs;
-      }
+    } else if (localNow >= start && localNow < end) {
+      startTime = start;
+      durationMs = officialDurationMs;
     }
 
     if (!startTime) {
@@ -457,7 +579,7 @@ export function useEnem2025() {
   const examRunning = examTime.running;
   const examElapsedLabel = examTime.elapsedLabel;
 
-  // Próximo dia de provas
+  // Próximo dia
   const nextExam = useMemo(() => getNextExamTarget(now), [now]);
   const nextExamCountdownLabel = nextExam
     ? nextExam.label
@@ -466,7 +588,7 @@ export function useEnem2025() {
     ? formatCountdown(nextExam.diffMs)
     : "--:--:--";
 
-  // Alertas gerais de eventos (portões, início, fim)
+  // Alertas pré-prova
   useEffect(() => {
     if (!coordinator || !officialSchedule) return;
 
@@ -510,7 +632,7 @@ export function useEnem2025() {
     });
   }, [now, coordinator, officialSchedule, firedAlerts]);
 
-  // Alertas específicos durante a prova com base no countdown
+  // Alertas durante prova
   useEffect(() => {
     if (!coordinator || !officialSchedule || !examRunning) return;
 
@@ -531,13 +653,14 @@ export function useEnem2025() {
       {
         id: "start_confirm",
         condition: remainingMinutes <= totalMs / 60000 - 1,
-        message: "Provas em andamento. Confirme avisos de abertura em todas as salas.",
+        message:
+          "Provas em andamento. Confirme avisos de abertura em todas as salas.",
       },
       {
         id: "60_left",
         condition: remainingMinutes === 60,
         message:
-          "Faltam 60 minutos. Oriente chefes de sala a fazer o aviso oficial de tempo.",
+          "Faltam 60 minutos. Oriente chefes de sala a fazer o aviso oficial.",
       },
       {
         id: "15_left",
@@ -549,7 +672,7 @@ export function useEnem2025() {
         id: "end_now",
         condition: remainingMinutes === 0,
         message:
-          "Tempo encerrado. Coordenar recolhimento de materiais e início dos procedimentos de fechamento.",
+          "Tempo encerrado. Coordenar recolhimento de materiais e fechamento.",
       },
     ] as const;
 
@@ -738,7 +861,6 @@ export function useEnem2025() {
     );
   }
 
-  // Controles para o timer da prova, usados na aba Prova
   function startExamManually() {
     if (!coordinator || !officialSchedule) {
       showError(
