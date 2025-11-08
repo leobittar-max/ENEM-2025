@@ -1,5 +1,6 @@
 import { CoordinatorData, Occurrence } from "@/hooks/use-enem-2025";
 import { APP_VERSION } from "@/version";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   coordinator: CoordinatorData;
@@ -35,25 +36,34 @@ export const Sidebar = ({
   const countdownValue =
     nextExamCountdownValue || "--:--:--";
 
+  const totalOccurrences = occurrences.length;
+
   return (
-    <aside className="flex h-full w-72 flex-col gap-4 border-r border-border bg-sidebar px-4 py-4 text-sm shadow-sm md:h-screen">
+    <aside
+      className={cn(
+        "flex h-full flex-col gap-4 border-r border-border bg-sidebar px-4 py-4 shadow-sm md:h-screen",
+        // Mais largo no mobile; confortável em tablets e desktop
+        "w-[82vw] max-w-sm md:w-80",
+      )}
+    >
+      {/* Cabeçalho */}
       <div className="flex items-start justify-between gap-2">
-        <div>
+        <div className="space-y-0.5">
           <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-sidebar-foreground/70">
-            <span className="text-base">🎓</span>
-            ENEM 2025
+            <span className="text-lg">🎓</span>
+            <span>ENEM 2025</span>
           </div>
-          <p className="text-[10px] text-sidebar-foreground/70">
+          <p className="text-[0.8rem] text-sidebar-foreground/80">
             Painel do Coordenador de Local
           </p>
-          <p className="mt-0.5 text-[8px] text-sidebar-foreground/40">
+          <p className="text-[0.65rem] text-sidebar-foreground/40">
             v{APP_VERSION}
           </p>
         </div>
         {onCloseMobile && (
           <button
             onClick={onCloseMobile}
-            className="md:hidden inline-flex h-6 w-6 items-center justify-center rounded-md border border-border text-[10px] text-muted-foreground hover:bg-muted"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-sidebar-border/70 bg-white/80 text-[0.8rem] text-sidebar-foreground/70 shadow-sm hover:bg-gray-100 md:hidden"
             aria-label="Fechar painel lateral"
           >
             ✕
@@ -61,132 +71,190 @@ export const Sidebar = ({
         )}
       </div>
 
-      <div className="space-y-2">
+      {/* Local de aplicação */}
+      <section className="space-y-1">
         <SectionLabel>Local de aplicação</SectionLabel>
-        <div className="rounded-md bg-sidebar-accent px-3 py-2 border border-sidebar-border/60">
-          <div className="text-xs font-semibold text-sidebar-foreground">
+        <div className="rounded-2xl bg-white shadow-[0_4px_14px_rgba(15,23,42,0.06)] border border-sidebar-border/80 px-3.5 py-3">
+          <div className="text-[0.9rem] font-semibold text-sidebar-foreground">
             {coordinator.location || "-"}
           </div>
-          <div className="text-[10px] text-sidebar-foreground/70">
+          <div className="mt-0.5 text-[0.78rem] text-sidebar-foreground/70">
             {coordinator.city} - {coordinator.state}
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="space-y-2">
+      {/* Coordenador */}
+      <section className="space-y-1">
         <SectionLabel>Coordenador(a)</SectionLabel>
-        <div className="rounded-md bg-sidebar-accent px-3 py-2 text-xs border border-sidebar-border/60">
-          <div className="font-medium text-sidebar-foreground">
+        <div className="rounded-2xl bg-white border border-sidebar-border/80 px-3.5 py-3 shadow-[0_3px_10px_rgba(15,23,42,0.04)]">
+          <div className="text-[0.9rem] font-semibold text-sidebar-foreground">
             {coordinator.name || "-"}
           </div>
-          <div className="mt-0.5 text-[9px] text-sidebar-foreground/70">
-            Responsável pelo fluxo operacional do local
+          <div className="mt-0.5 text-[0.75rem] text-sidebar-foreground/65 leading-snug">
+            Responsável pelo fluxo operacional do local.
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="space-y-2">
+      {/* Status em tempo real */}
+      <section className="space-y-1">
         <SectionLabel>Status em tempo real</SectionLabel>
-        <div className="rounded-md bg-sidebar-accent px-3 py-2 text-[10px] space-y-1.5 border border-sidebar-border/60">
-          <div className="flex items-center justify-between">
-            <span className="text-sidebar-foreground/70">Horário Brasília</span>
-            <span className="font-mono text-[10px] text-sidebar-foreground">
+        <div className="rounded-2xl bg-white/95 border border-sidebar-border/80 px-3.5 py-3 space-y-1.5 shadow-[0_4px_16px_rgba(15,23,42,0.06)]">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[0.75rem] text-sidebar-foreground/70">
+              Horário Brasília
+            </span>
+            <span className="font-mono text-[0.82rem] font-semibold text-sidebar-foreground">
               {currentTime}
             </span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sidebar-foreground/70">Etapa atual</span>
-            <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-semibold text-emerald-600">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[0.75rem] text-sidebar-foreground/70">
+              Etapa atual
+            </span>
+            <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[0.7rem] font-semibold text-emerald-600">
               {currentStage}
             </span>
           </div>
-          <div className="mt-1.5 pt-1.5 border-t border-sidebar-border/40 flex flex-col gap-0.5">
-            <span className="text-[8px] text-sidebar-foreground/70">
+          <div className="mt-1.5 pt-1.5 border-t border-sidebar-border/40 space-y-0.5">
+            <span className="text-[0.7rem] text-sidebar-foreground/70">
               Countdown para o próximo dia de provas
             </span>
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-[8px] text-sidebar-foreground/70 truncate">
+              <span className="text-[0.68rem] text-sidebar-foreground/65 line-clamp-1">
                 {countdownLabel}
               </span>
-              <span className="font-mono text-[10px] font-semibold text-primary">
+              <span className="font-mono text-[0.82rem] font-semibold text-primary">
                 {countdownValue}
               </span>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="space-y-2">
+      {/* Resumo rápido */}
+      <section className="space-y-1">
         <SectionLabel>Resumo rápido</SectionLabel>
-        <div className="grid grid-cols-3 gap-1.5 text-center text-[9px]">
+        <div className="grid grid-cols-3 gap-1.5 text-center">
           <MiniStat label="Salas" value={coordinator.classrooms} />
           <MiniStat label="Participantes" value={coordinator.participants} />
-          <MiniStat label="Ocorrências" value={occurrences.length} />
+          <MiniStat label="Ocorrências" value={totalOccurrences} />
         </div>
-      </div>
+      </section>
 
+      {/* Modo simulação */}
       {coordinator.simulationMode && (
-        <div className="mt-1 inline-flex items-center gap-1 rounded-full border border-yellow-500/40 bg-yellow-500/10 px-2 py-0.5 text-[9px] text-yellow-700">
+        <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-yellow-400/60 bg-yellow-50 px-2.5 py-1 text-[0.7rem] text-yellow-800 shadow-[0_2px_8px_rgba(250,204,21,0.25)]">
           🎮 Modo simulação ativo
         </div>
       )}
 
-      <div className="mt-3 space-y-2">
-        <button
-          type="button"
+      {/* Ações principais */}
+      <section className="mt-2 space-y-1.5">
+        <SidebarButton
           onClick={onOpenHistory}
-          className="w-full rounded-md border border-sidebar-border bg-sidebar-accent px-3 py-2 text-left text-[10px] font-semibold text-sidebar-foreground hover:bg-sidebar-accent/70 hover:border-sidebar-ring transition-colors flex items-center gap-2"
-        >
-          📋 Ver Histórico Completo
-        </button>
-
-        <button
-          type="button"
+          variant="soft"
+          icon="📋"
+          label="Ver Histórico Completo"
+          description="Linha do tempo com todos os registros do dia."
+        />
+        <SidebarButton
           onClick={onOpenSupervision}
-          className="w-full rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-left text-[10px] font-semibold text-primary hover:bg-primary/10 hover:border-primary transition-colors flex items-center gap-2"
-        >
-          🕵️ Supervisionar
-        </button>
-
+          variant="primary-soft"
+          icon="🕵️"
+          label="Supervisionar"
+          description="Presenças da equipe e progresso por sala."
+        />
         {showBackToPanel && onBackToPanel && (
-          <button
-            type="button"
+          <SidebarButton
             onClick={onBackToPanel}
-            className="w-full rounded-md border border-emerald-400/60 bg-emerald-50 px-3 py-2 text-left text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100 hover:border-emerald-500 transition-colors flex items-center gap-2"
-          >
-            ⬅ Voltar ao Painel
-          </button>
+            variant="success-soft"
+            icon="⬅"
+            label="Voltar ao Painel"
+            description="Retornar à visão principal do coordenador."
+          />
         )}
-      </div>
+      </section>
 
+      {/* Rodapé / sair */}
       <div className="mt-auto space-y-2 pt-2">
         <button
           type="button"
           onClick={onExit}
-          className="w-full rounded-md border border-red-300/80 bg-red-50 px-3 py-2 text-left text-[10px] font-semibold text-red-700 hover:bg-red-100 hover:border-red-400 transition-colors flex items-center gap-2"
+          className="w-full rounded-2xl border border-red-300/90 bg-red-50 px-3.5 py-2.5 text-left text-[0.8rem] font-semibold text-red-700 hover:bg-red-100 hover:border-red-400 transition-colors flex items-center gap-2 shadow-[0_3px_10px_rgba(248,113,113,0.18)]"
         >
-          ⏏ Sair do Painel
+          <span>⏏ Sair do Painel</span>
         </button>
-        <div className="text-[8px] text-sidebar-foreground/60">
-          Use este painel como guia operacional; observe sempre os comunicados
-          oficiais do INEP.
-        </div>
+        <p className="text-[0.65rem] text-sidebar-foreground/55 leading-relaxed">
+          Use este painel como guia operacional. Em caso de dúvida, prevalecem
+          sempre os comunicados e manuais oficiais do INEP.
+        </p>
       </div>
     </aside>
   );
 };
 
 const SectionLabel = ({ children }: { children: string }) => (
-  <div className="text-[9px] font-semibold uppercase tracking-wide text-sidebar-foreground/60">
+  <div className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/55">
     {children}
   </div>
 );
 
 const MiniStat = ({ label, value }: { label: string; value: number }) => (
-  <div className="rounded-md bg-sidebar-accent px-1.5 py-1 border border-sidebar-border/60">
-    <div className="text-[11px] font-semibold text-sidebar-foreground">
+  <div className="rounded-2xl bg-white border border-sidebar-border/80 px-2 py-1.5 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex flex-col items-center justify-center gap-0.5">
+    <div className="text-[0.95rem] font-semibold text-sidebar-foreground">
       {value}
     </div>
-    <div className="text-[8px] text-sidebar-foreground/70">{label}</div>
+    <div className="text-[0.65rem] text-sidebar-foreground/65">
+      {label}
+    </div>
   </div>
 );
+
+interface SidebarButtonProps {
+  onClick: () => void;
+  icon: string;
+  label: string;
+  description?: string;
+  variant?: "soft" | "primary-soft" | "success-soft";
+}
+
+const SidebarButton = ({
+  onClick,
+  icon,
+  label,
+  description,
+  variant = "soft",
+}: SidebarButtonProps) => {
+  const base =
+    "w-full rounded-2xl px-3.5 py-2.25 text-left flex flex-col gap-0.25 border transition-colors shadow-[0_2px_8px_rgba(15,23,42,0.04)]";
+  const variants: Record<string, string> = {
+    soft:
+      "bg-white border-sidebar-border/80 hover:bg-gray-50 text-sidebar-foreground",
+    "primary-soft":
+      "bg-primary/5 border-primary/35 text-primary hover:bg-primary/9",
+    "success-soft":
+      "bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100",
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(base, variants[variant])}
+    >
+      <div className="flex items-center gap-1.5">
+        <span className="text-base leading-none">{icon}</span>
+        <span className="text-[0.82rem] font-semibold leading-tight">
+          {label}
+        </span>
+      </div>
+      {description && (
+        <span className="mt-0.5 text-[0.68rem] text-sidebar-foreground/60 leading-snug">
+          {description}
+        </span>
+      )}
+    </button>
+  );
+};
