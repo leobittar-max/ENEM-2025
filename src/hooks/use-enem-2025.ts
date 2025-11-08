@@ -100,17 +100,8 @@ const STORAGE_TAB_KEY = "enem2025_tab_v1";
 const STORAGE_EXAM_TIMER_KEY = "enem2025_exam_timer_v1";
 
 /**
- * IMPORTANTE:
- * Este array deve ser a cópia EXATA do JSON oficial (enem_coordinator_checklist_v3_coordenador.json),
- * com os campos:
- * - id
- * - fase
- * - titulo
- * - papel
- * - hora_sugerida
- * - info_popup: { titulo, corpo, fonte: { manual, pagina } }
- *
- * Abaixo está um exemplo reduzido; na sua base, mantenha TODOS os itens.
+ * Checklist oficial completo do coordenador,
+ * copiado do arquivo enem_coordinator_checklist_v3_coordenador.json.
  */
 const rawChecklist: {
   id: string;
@@ -125,7 +116,6 @@ const rawChecklist: {
   };
   critico?: boolean;
 }[] = [
-  // Exemplos iniciais (substitua/complete com todo o conteúdo do JSON oficial):
   {
     id: "prep-01",
     fase: "Preparação Prévia",
@@ -135,10 +125,9 @@ const rawChecklist: {
     info_popup: {
       titulo: "Conferência completa do kit administrativo",
       corpo:
-        "Confira se as caixas trazem todos os impressos e reservas (listas de presença, atas, cartões-resposta, folhas de redação/rascunho), crachás, envelopes de sala e envelopes porta-objetos. Registre o recebimento no sistema da Instituição Aplicadora e separe por sala conforme o Relatório de Participantes e Salas.",
+        "Confira se as caixas trazem todos os impressos e reservas (listas de presença, atas, cartões-resposta/folha de redaão, folhas de rascunho), crachás, envelopes de sala e envelopes porta-objetos. Registre o recebimento no sistema da Instituição Aplicadora e separe por sala conforme o Relatório de Participantes e Salas. Se faltar algo, contate imediatamente a Aplicadora. Fonte: Manual do Coordenador, p.12.",
       fonte: { manual: "Coordenador", pagina: 12 },
     },
-    critico: true,
   },
   {
     id: "prep-02",
@@ -149,92 +138,671 @@ const rawChecklist: {
     info_popup: {
       titulo: "Envelope porta-objetos por sala e por colaborador",
       corpo:
-        "Separe envelopes porta-objetos na quantidade exata por sala e uma cota para a equipe, evitando falta no momento de identificação e vistoria.",
+        "Separe envelopes porta-objetos na quantidade exata por sala, conforme o Relatório de Participantes e Salas, e reserve uma cota para toda a equipe de aplicação. Isso evita falta no momento de identificação e vistoria eletrônica. Fonte: Manual do Coordenador, p.12.",
       fonte: { manual: "Coordenador", pagina: 12 },
     },
   },
   {
-    id: "dia1-01",
-    fase: "Dia do Exame - Manhã",
-    titulo: "Chegada antecipada do coordenador ao local",
+    id: "prep-03",
+    fase: "Preparação Prévia",
+    titulo: "Checar detectores de metais e alicate de lacre",
     papel: "Coordenador",
-    hora_sugerida: "10:30",
+    hora_sugerida: null,
+    info_popup: {
+      titulo: "Segurança e abertura de malotes",
+      corpo:
+        "Confirme o funcionamento dos detectores (bateria/carga, modo sonoro) e a disponibilidade do alicate para corte do lacre de aço dos malotes. Registre a quantidade recebida no sistema. Fonte: Manual do Coordenador, p.12 e p.15.",
+      fonte: { manual: "Coordenador", pagina: 12 },
+    },
   },
   {
-    id: "dia1-02",
-    fase: "Dia do Exame - Manhã",
-    titulo: "Reunião rápida com equipe e confirmação dos horários",
+    id: "prep-04",
+    fase: "Preparação Prévia",
+    titulo: "Testar app interno no celular do coordenador e do assistente",
     papel: "Coordenador",
-    hora_sugerida: "11:00",
+    hora_sugerida: null,
+    info_popup: {
+      titulo: "Verificação do aplicativo",
+      corpo:
+        "Instale/atualize o app indicado pela Aplicadora e valide o login e as telas críticas (relatórios, checklist, registro de ocorrências). Falhas devem ser reportadas ainda na semana prévia. Fonte: Manual do Coordenador, p.12.",
+      fonte: { manual: "Coordenador", pagina: 12 },
+    },
+  },
+  {
+    id: "prep-05",
+    fase: "Preparação Prévia",
+    titulo:
+      "Vistoriar prédio e salas (iluminação, ventilação, água, energia)",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo: "Vistoria geral do local",
+      corpo:
+        "Inspecione luz, ventilação/climatização, abastecimento de água, banheiros, bebedouros e tomadas. Prefira salas longe dos banheiros para reduzir ruído; se usá-las, que seja como Sala Extra. Fonte: Manual do Coordenador, p.13.",
+      fonte: { manual: "Coordenador", pagina: 13 },
+    },
+  },
+  {
+    id: "prep-06",
+    fase: "Preparação Prévia",
+    titulo:
+      "Garantir acessibilidade, salas especiais e sala de acompanhante",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo: "Acessibilidade mapeada e mobiliário adequado",
+      corpo:
+        "Verifique mesas e cadeiras acessíveis, tomadas para videoprova/leitor de tela, identificação das salas de fácil acesso e a sala do acompanhante de lactante. Ajuste antes do dia da prova. Fonte: Manual do Coordenador, p.13.",
+      fonte: { manual: "Coordenador", pagina: 13 },
+    },
+  },
+  {
+    id: "prep-07",
+    fase: "Preparação Prévia",
+    titulo:
+      "Definir Sala de Coordenação e guarda segura dos malotes",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Coordenação próxima às salas e malotes sob guarda",
+      corpo:
+        "Escolha a Sala de Coordenação próxima às salas de prova e garanta local trancado para malotes (preferencialmente sem janelas). Sem essa sala, designe vigilância dedicada. Fonte: Manual do Coordenador, p.13.",
+      fonte: { manual: "Coordenador", pagina: 13 },
+    },
+  },
+  {
+    id: "prep-08",
+    fase: "Preparação Prévia",
+    titulo:
+      "Planejar capacitação e comunicar dress code da equipe",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Capacitação obrigatória e orientações de vestimenta",
+      corpo:
+        "Agende a capacitação (presencial) e reforce: camisa branca (intérprete de Libras de preto), calça jeans/preta, documento com foto, caneta preta transparente e relógio analógico. Fonte: Manual do Coordenador, p.14.",
+      fonte: { manual: "Coordenador", pagina: 14 },
+    },
+  },
+  {
+    id: "prep-09",
+    fase: "Preparação Prévia",
+    titulo:
+      "Verificar documentação da equipe (termos e lista de presença)",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Regularidade documental da equipe",
+      corpo:
+        "Confirme que todos assinaram os termos obrigatórios e que a lista de presença/credenciamento está correta. Sem documentação regular, o colaborador deve ser substituído. Fonte: Manual do Coordenador, p.14–15.",
+      fonte: { manual: "Coordenador", pagina: 15 },
+    },
+  },
+  {
+    id: "prep-10",
+    fase: "Preparação Prévia",
+    titulo:
+      "Checar fechaduras/chaves e integridade da sala-cofre dos malotes",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Proteção física dos malotes",
+      corpo:
+        "Teste as fechaduras e confira quem tem a guarda das chaves. A sala de malotes deve ser trancada e, preferencialmente, sem janelas. Fonte: Manual do Coordenador, p.13.",
+      fonte: { manual: "Coordenador", pagina: 13 },
+    },
+  },
+  {
+    id: "prep-11",
+    fase: "Preparação Prévia",
+    titulo:
+      "Inspecionar dispositivos de segurança e combate a incêndio",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Segurança predial e preventiva",
+      corpo:
+        "Verifique a sinalização de emergência, extintores acessíveis, rotas de fuga e iluminação de segurança. Oriente a equipe sobre pontos de encontro. Fonte: Manual do Coordenador, p.13–14.",
+      fonte: { manual: "Coordenador", pagina: 14 },
+    },
+  },
+  {
+    id: "prep-12",
+    fase: "Preparação Prévia",
+    titulo:
+      "Restringir acesso de terceiros e circulação no prédio",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo: "Perímetro controlado",
+      corpo:
+        "Garanta que apenas equipe, certificador e candidatos acessem as áreas autorizadas. Sinalize proibições e defina pontos de controle de entrada. Fonte: Manual do Coordenador, p.13–15.",
+      fonte: { manual: "Coordenador", pagina: 15 },
+    },
+  },
+  {
+    id: "prep-13",
+    fase: "Preparação Prévia",
+    titulo:
+      "Organizar numeração e identificação oficial das salas",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Sinalização e distribuição por sala",
+      corpo:
+        "Numere e identifique as salas conforme etiquetas/planilhas oficiais, fixando sinalização visível nos corredores e portas. Fonte: Manual do Coordenador, p.13.",
+      fonte: { manual: "Coordenador", pagina: 13 },
+    },
+  },
+  {
+    id: "prep-14",
+    fase: "Preparação Prévia",
+    titulo:
+      "Definir plano de contingência (energia, incidentes, comunicação)",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Procedimentos para imprevistos",
+      corpo:
+        "Combine rotas de ação para falta de energia, ruídos externos, incidentes médicos e substituições urgentes. Atribua responsáveis e use fiscal volante como principal canal de acionamento. Fonte: Manual do Coordenador, p.14–15.",
+      fonte: { manual: "Coordenador", pagina: 14 },
+    },
+  },
+  {
+    id: "prep-15",
+    fase: "Preparação Prévia",
+    titulo:
+      "Testar relógios analógicos e cronômetros das salas",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Sincronização de tempo",
+      corpo:
+        "Garanta que todas as salas tenham marcador de tempo funcional e sincronizado ao horário de Brasília. Disponibilize relógio reserva se necessário. Fonte: Manual do Chefe de Sala, p.1–2.",
+      fonte: { manual: "Chefe de Sala", pagina: 2 },
+    },
+  },
+  {
+    id: "prep-16",
+    fase: "Preparação Prévia",
+    titulo:
+      "Planejar comunicação via fiscal volante e assistente",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Canal rápido de apoio às salas",
+      corpo:
+        "Estabeleça o fiscal volante como ponte entre Coordenação e salas para documentos, ocorrências e deslocamentos ao banheiro. Defina sinais e rotas. Fonte: Manual do Coordenador, p.20 e p.37.",
+      fonte: { manual: "Coordenador", pagina: 20 },
+    },
+  },
+  {
+    id: "manha-01",
+    fase: "Dia do Exame – Manhã (pré-portões)",
+    titulo: "Chegada do coordenador e assistente (08:00)",
+    papel: "Coordenador",
+    hora_sugerida: "08:00",
+    info_popup: {
+      titulo: "Início formal das atividades no local",
+      corpo:
+        "Coordenador e assistente chegam às 8h, recebem supervisor/certificador (se houver) e organizam a distribuição de materiais. Registre código/CPF e horários do certificador no relatório. Fonte: Manual do Coordenador, p.15.",
+      fonte: { manual: "Coordenador", pagina: 15 },
+    },
+  },
+  {
+    id: "manha-02",
+    fase: "Dia do Exame – Manhã (pré-portões)",
+    titulo:
+      "Chegada da equipe (09:00 no 1º dia; 09:30 no 2º)",
+    papel: "Coordenador",
+    hora_sugerida: "09:00/09:30",
+    info_popup: {
+      titulo: "Ponto de encontro e presença",
+      corpo:
+        "Confirme presença, substitua ausentes e direcione chefes de sala e fiscais. Entregue envelopes de sala com recibo e faça a minicapacitação com reforço dos procedimentos. Fonte: Manual do Coordenador, p.15 e p.20.",
+      fonte: { manual: "Coordenador", pagina: 15 },
+    },
+  },
+  {
+    id: "manha-03",
+    fase: "Dia do Exame – Manhã (pré-portões)",
+    titulo:
+      "Distribuir materiais às salas (envelopes, reservas, crachás)",
+    papel: "Coordenador",
+    hora_sugerida: "09:30",
+    info_popup: {
+      titulo: "Kits completos por sala",
+      corpo:
+        "Cada sala recebe envelope com lista, ata, avaliações (se houver), envelopes porta-objetos e materiais reserva. Chefes de sala confirmam recebimento. Fonte: Manual do Coordenador, p.15.",
+      fonte: { manual: "Coordenador", pagina: 15 },
+    },
   },
   {
     id: "portoes-01",
-    fase: "Dia do Exame - Portões e entrada",
-    titulo: "Garantir abertura dos portões no horário oficial",
+    fase: "Dia do Exame – Portões e Malotes",
+    titulo: "ABRIR portões (12:00) e FECHAR (13:00)",
     papel: "Coordenador",
-    hora_sugerida: "12:00",
-    critico: true,
+    hora_sugerida: "12:00 / 13:00",
+    info_popup: {
+      titulo:
+        "Controle de acesso no horário de Brasília",
+      corpo:
+        "Abra os portões às 12h e feche às 13h, conforme horário de Brasília. Após o fechamento, inicie a abertura dos malotes e a distribuição de envelopes nas salas. Fonte: Manual do Coordenador, p.11.",
+      fonte: { manual: "Coordenador", pagina: 11 },
+    },
   },
   {
-    id: "durante-01",
+    id: "portoes-02",
+    fase: "Dia do Exame – Portões e Malotes",
+    titulo:
+      "Abrir malotes (após 13:00) e distribuir envelopes/provas",
+    papel: "Coordenador",
+    hora_sugerida: "13:00+",
+    info_popup: {
+      titulo:
+        "Integridade e distribuição nominal",
+      corpo:
+        "Abertura dos malotes somente após 13h, com integridade verificada e registro. Distribua envelopes de provas às salas e garanta a distribuição nominal dos cadernos e folhas de rascunho (2º dia). Fonte: Manual do Coordenador, p.42–44.",
+      fonte: { manual: "Coordenador", pagina: 42 },
+    },
+  },
+  {
+    id: "exec-01",
     fase: "Durante a Prova",
-    titulo: "Confirmar início das provas em todas as salas",
+    titulo:
+      "Supervisionar: Início das provas (13:30) e avisos obrigatórios",
     papel: "Coordenador",
     hora_sugerida: "13:30",
-    critico: true,
+    info_popup: {
+      titulo:
+        "Supervisão do Coordenador — Ritual de abertura em sala",
+      corpo:
+        "O coordenador deve supervisionar que os Chefes de Sala iniciem às 13h30, façam a leitura dos avisos obrigatórios e mantenham o marcador de tempo visível. O coordenador presta suporte via fiscal volante e registra ocorrências quando necessário. Fonte: Manual do Chefe de Sala, p.2.",
+      fonte: { manual: "Chefe de Sala", pagina: 2 },
+    },
   },
   {
-    id: "durante-02",
+    id: "exec-02",
     fase: "Durante a Prova",
-    titulo: "Monitorar ocorrências e apoio às salas",
+    titulo:
+      "Supervisionar: Identificação e conferência de documentos",
     papel: "Coordenador",
     hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Supervisão do Coordenador — Documentos aceitos e procedimentos",
+      corpo:
+        "O coordenador deve supervisionar que os Chefes de Sala confiram nome (civil/social), documento com foto (impresso ou digital nos apps oficiais) e façam orientação sobre envelope porta-objetos e detector de metais. Prestar suporte via fiscal volante e registrar ocorrências quando necessário. Fonte: Manual do Chefe de Sala, p.2–4.",
+      fonte: { manual: "Chefe de Sala", pagina: 2 },
+    },
+  },
+  {
+    id: "exec-03",
+    fase: "Durante a Prova",
+    titulo:
+      "Supervisionar: Envelope porta-objetos — guarda de itens e vistorias",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Supervisão do Coordenador — Itens obrigatórios no envelope",
+      corpo:
+        "O coordenador deve supervisionar a correta utilização dos envelopes porta-objetos (celular desligado, eletrônicos e impressos), a guarda sob a carteira e a vistoria eletrônica. Prestar suporte via fiscal volante e registrar ocorrências quando necessário. Fonte: Manual do Chefe de Sala, p.4.",
+      fonte: { manual: "Chefe de Sala", pagina: 4 },
+    },
+  },
+  {
+    id: "exec-04",
+    fase: "Durante a Prova",
+    titulo:
+      "Supervisionar: Controle de horários e saídas (2h mín.; 15:30/18:30/18:00)",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Supervisão do Coordenador — Marcos de tempo e saídas",
+      corpo:
+        "O coordenador assegura que as salas cumpram os marcos de tempo: saída sem caderno a partir de 15h30; saída com caderno às 18h30 (1º dia) e 18h (2º dia); término normal às 19h/18h30; e gestão adequada do tempo adicional. Prestar suporte via fiscal volante e registrar ocorrências quando necessário. Fonte: Manual do Coordenador, p.11.",
+      fonte: { manual: "Coordenador", pagina: 11 },
+    },
+  },
+  {
+    id: "exec-05",
+    fase: "Durante a Prova",
+    titulo:
+      "Sala Extra e participantes fora do cadastro (gestão e reporte)",
+    papel: "Coordenador",
+    hora_sugerida: "14:20 (comunicação)",
+    info_popup: {
+      titulo: "Direcionamento e reporte",
+      corpo:
+        "Gerencie Sala Extra para casos necessários e informe, no horário indicado, ausentes e participantes fora do cadastro à Instituição Aplicadora. Fonte: Manual do Coordenador (checklist operacional), p.37–40.",
+      fonte: { manual: "Coordenador", pagina: 37 },
+    },
+  },
+  {
+    id: "exec-06",
+    fase: "Durante a Prova",
+    titulo:
+      "Supervisionar: Procedimentos de segurança e detector de metais",
+    papel: "Coordenador",
+    hora_sugerida: "13:45 (vistoria equipe)",
+    info_popup: {
+      titulo:
+        "Supervisão do Coordenador — Fluxo de vistoria e reforços",
+      corpo:
+        "O coordenador deve supervisionar a vistoria eletrônica e, quando aplicável, a vistoria de lanches/medicamentos conforme regras, apoiando as salas e registrando anomalias. Fonte: Manual do Chefe de Sala, p.4–5.",
+      fonte: { manual: "Chefe de Sala", pagina: 4 },
+    },
+  },
+  {
+    id: "exec-07",
+    fase: "Durante a Prova",
+    titulo:
+      "Distribuição dos envelopes com recibo assinado pelo Chefe de Sala",
+    papel: "Coordenador",
+    hora_sugerida: "13:05",
+    info_popup: {
+      titulo: "Controle formal de entrega",
+      corpo:
+        "Entregue os envelopes às salas com conferência por assinatura do Chefe de Sala, garantindo rastreabilidade e responsabilidade pelos materiais. Fonte: Manual do Coordenador, p.15.",
+      fonte: { manual: "Coordenador", pagina: 15 },
+    },
+  },
+  {
+    id: "exec-08",
+    fase: "Durante a Prova",
+    titulo:
+      "Preencher e assinar o Termo de Abertura dos Malotes",
+    papel: "Coordenador",
+    hora_sugerida: "13:00–13:20",
+    info_popup: {
+      titulo:
+        "Registro de integridade dos malotes",
+      corpo:
+        "Registre horário de abertura, número do lacre cortado e assinatura dos responsáveis. Sem este termo, não prossiga com a distribuição. Fonte: Manual do Coordenador, p.42–44.",
+      fonte: { manual: "Coordenador", pagina: 42 },
+    },
+  },
+  {
+    id: "exec-09",
+    fase: "Durante a Prova",
+    titulo:
+      "Acompanhar fiscais volantes e assistentes nas demandas das salas",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo: "Fluxo de apoio contínuo",
+      corpo:
+        "Monitore deslocamentos, autorize atendimentos e mantenha o canal ágil para entregas, substituições e ocorrências. Fonte: Manual do Coordenador, p.20 e p.37.",
+      fonte: { manual: "Coordenador", pagina: 20 },
+    },
+  },
+  {
+    id: "exec-10",
+    fase: "Durante a Prova",
+    titulo:
+      "Monitorar salas com atendimento especializado (tempo adicional, lactantes, TEA/DNV)",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Garantia de condições específicas",
+      corpo:
+        "Verifique aplicação correta de tempo adicional, salas de lactantes, recursos de acessibilidade e procedimentos diferenciados quando previstos. Fonte: Manual do Coordenador, p.13 e p.38.",
+      fonte: { manual: "Coordenador", pagina: 38 },
+    },
+  },
+  {
+    id: "exec-11",
+    fase: "Durante a Prova",
+    titulo:
+      "Supervisionar: Leituras de avisos obrigatórios no tempo certo",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Supervisão do Coordenador — Avisos marcados no quadro",
+      corpo:
+        "Garanta que os marcos do marcador de tempo sejam lidos e registrados nos horários indicados (2h mín., 60 min restantes, 15 min finais). Prestar suporte via fiscal volante e registrar ocorrências quando necessário. Fonte: Manual do Chefe de Sala, p.1–2.",
+      fonte: { manual: "Chefe de Sala", pagina: 2 },
+    },
+  },
+  {
+    id: "exec-12",
+    fase: "Durante a Prova",
+    titulo:
+      "Registrar/validar ocorrências em ata/sistema (em tempo real)",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Rastreabilidade e transparência",
+      corpo:
+        "Registre e valide ocorrências (documentação irregular, desistências, problemas de saúde, barulho, energia e quaisquer incidentes) e oriente as salas. Fonte: Manuais — rotinas de ocorrência (Coordenador p.57+; Chefe de Sala p.2–5).",
+      fonte: { manual: "Coordenador", pagina: 57 },
+    },
+  },
+  {
+    id: "exec-13",
+    fase: "Durante a Prova",
+    titulo:
+      "Autorizar/acompanhar idas ao banheiro via fiscal volante",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo: "Controle de deslocamentos",
+      corpo:
+        "Defina e fiscalize o fluxo de acompanhamento por fiscal volante. Se houver saída antes do início, refaça identificação e vistoria. Registre horários em ata quando aplicável. Fonte: Manual do Chefe de Sala, p.2–4.",
+      fonte: { manual: "Chefe de Sala", pagina: 3 },
+    },
+  },
+  {
+    id: "exec-14",
+    fase: "Durante a Prova",
+    titulo:
+      "Comunicar avisos gerais (alto-falante) quando necessário",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo: "Comando central do exame",
+      corpo:
+        "Use comunicação centralizada para padronizar avisos importantes (início, alerta de 2h, 60 min restantes, 15 min finais), sem gerar ruído excessivo. Fonte: Manual do Coordenador, p.11 e p.20.",
+      fonte: { manual: "Coordenador", pagina: 11 },
+    },
   },
   {
     id: "enc-01",
     fase: "Encerramento",
-    titulo: "Orientar encerramento simultâneo conforme horário",
+    titulo:
+      "Recolher materiais e conferir assinaturas/listas",
     papel: "Coordenador",
     hora_sugerida: null,
-    critico: true,
+    info_popup: {
+      titulo:
+        "Fechamento administrativo das salas",
+      corpo:
+        "Recolha cartões-resposta, folhas de redação, atas e listas de presença com assinaturas. Confirme contagens (presentes/ausentes) e registre ocorrências restantes. Fonte: Manual do Coordenador, p.57–63.",
+      fonte: { manual: "Coordenador", pagina: 57 },
+    },
   },
   {
     id: "enc-02",
     fase: "Encerramento",
-    titulo: "Conferir devolução de malotes, listas e atas",
+    titulo:
+      "Fechamento e lacre dos malotes",
     papel: "Coordenador",
     hora_sugerida: null,
-    critico: true,
+    info_popup: {
+      titulo:
+        "Integridade do lacre e conferência de volumes",
+      corpo:
+        "Organize documentos por envelope correto, confira números/integração dos lacres e registre horários. Lacre os malotes e prepare a devolução formal. Fonte: Manual do Coordenador, p.63.",
+      fonte: { manual: "Coordenador", pagina: 63 },
+    },
+  },
+  {
+    id: "enc-03",
+    fase: "Encerramento",
+    titulo:
+      "Verificar fisicamente os lacres (número/integ.) antes da devolução",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Conferência final de segurança",
+      corpo:
+        "Confirme que todos os envelopes e malotes estão com lacres íntegros e numeração registrada. Divergências devem ser registradas e comunicadas. Fonte: Manual do Coordenador, p.63.",
+      fonte: { manual: "Coordenador", pagina: 63 },
+    },
+  },
+  {
+    id: "enc-04",
+    fase: "Encerramento",
+    titulo:
+      "Preencher e assinar o Termo de Encerramento da Aplicação",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Fechamento formal do dia",
+      corpo:
+        "Registre horários, volumes, ocorrências resumidas e assinaturas dos responsáveis. Documento indispensável para entrega à Aplicadora. Fonte: Manual do Coordenador, p.60–64.",
+      fonte: { manual: "Coordenador", pagina: 60 },
+    },
+  },
+  {
+    id: "enc-05",
+    fase: "Encerramento",
+    titulo:
+      "Conferir assinaturas dos chefes de sala nas atas e listas",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo:
+        "Documentação completa",
+      corpo:
+        "Garanta que todas as atas, listas e relatórios foram assinados. Sem assinaturas, o material não deve ser lacrado. Fonte: Manual do Coordenador, p.57–63.",
+      fonte: { manual: "Coordenador", pagina: 57 },
+    },
+  },
+  {
+    id: "enc-06",
+    fase: "Encerramento",
+    titulo:
+      "Conferir devolução de detectores de metais e equipamentos",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo: "Controle de bens",
+      corpo:
+        "Confira quantidade e estado dos equipamentos e registre a devolução. Itens com defeito devem ser anotados para substituição. Fonte: Manual do Coordenador, p.12 e p.60.",
+      fonte: { manual: "Coordenador", pagina: 60 },
+    },
+  },
+  {
+    id: "enc-07",
+    fase: "Encerramento",
+    titulo:
+      "Conferir lista de volumes e emitir recibo de entrega",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo: "Rastreio da remessa",
+      corpo:
+        "Relacione todos os volumes/malotes, confira a lista, gere recibo e colha assinatura do responsável pelo recebimento. Fonte: Manual do Coordenador, p.63–64.",
+      fonte: { manual: "Coordenador", pagina: 63 },
+    },
+  },
+  {
+    id: "enc-08",
+    fase: "Encerramento",
+    titulo:
+      "Registrar ocorrências operacionais (energia, barulho, logística)",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo: "Lições para o próximo dia",
+      corpo:
+        "Descreva problemas e soluções aplicadas, para orientar a equipe no dia seguinte (ou em futuras aplicações). Fonte: Manual do Coordenador, p.60–62.",
+      fonte: { manual: "Coordenador", pagina: 60 },
+    },
+  },
+  {
+    id: "enc-09",
+    fase: "Encerramento",
+    titulo:
+      "Feedback imediato com chefes de sala (debriefing)",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo: "Alinhamento final",
+      corpo:
+        "Reúna os chefes de sala rapidamente para revisar incidentes e alinhar melhorias. Registre pontos críticos e ações. Fonte: Manual do Coordenador, p.60–61.",
+      fonte: { manual: "Coordenador", pagina: 61 },
+    },
+  },
+  {
+    id: "enc-10",
+    fase: "Encerramento",
+    titulo:
+      "Verificar fechamento das salas e condições do prédio",
+    papel: "Coordenador",
+    hora_sugerida: null,
+    info_popup: {
+      titulo: "Encerramento do local",
+      corpo:
+        "Confirme que as salas estão vazias, limpas e trancadas; luzes apagadas e acesso restrito após a devolução dos malotes. Fonte: Manual do Coordenador, p.63–64.",
+      fonte: { manual: "Coordenador", pagina: 64 },
+    },
   },
   {
     id: "pos-01",
     fase: "Pós-Aplicação",
-    titulo: "Registrar resumo final do dia e ocorrências críticas",
+    titulo:
+      "Entrega à Instituição Aplicadora e relatório final",
     papel: "Coordenador",
     hora_sugerida: null,
+    info_popup: {
+      titulo: "Devolução formal e fechamento",
+      corpo:
+        "Entregue todos os malotes e equipamentos (detectores etc.), finalize relatórios/ocorrências no app e valide pendências com chefes de sala. Fonte: Manual do Coordenador, p.60–64.",
+      fonte: { manual: "Coordenador", pagina: 60 },
+    },
   },
 ];
 
 /**
- * Mapeia o campo "fase" do JSON oficial para a fase interna usada nas abas.
- * Ajuste aqui para alinhar exatamente com os nomes do seu arquivo JSON.
+ * Mapeia o campo "fase" do JSON para as fases internas usadas nas abas.
  */
 function mapPhase(fase: string): ChecklistPhase {
   const f = fase.toLowerCase();
 
-  if (f.includes("preparação")) return "preparation";
+  if (f.includes("preparação prévia")) return "preparation";
+
   if (f.includes("manhã")) return "morning";
-  if (f.includes("portões")) return "morning";
+  if (f.includes("portões") || f.includes("malotes")) return "morning";
+
   if (f.includes("durante a prova")) return "during";
+
   if (f === "encerramento" || f.includes("encerramento")) return "closing";
+
   if (f.includes("pós-aplicação") || f.includes("pós aplicação")) return "post";
 
-  // fallback: considerar como preparação se algo não casar
   return "preparation";
 }
 
 /**
- * Converte rawChecklist para ChecklistItem usado pelo app.
+ * Converte rawChecklist para ChecklistItem interno.
  */
 const checklistItems: ChecklistItem[] = rawChecklist.map((item) => ({
   id: item.id,
@@ -279,12 +847,20 @@ function createEmptyDailyState(): DailyState {
 
 function safeLoadState(): EnemState {
   if (typeof window === "undefined") {
-    return { day1: createEmptyDailyState(), day2: createEmptyDailyState(), coordinator: null };
+    return {
+      day1: createEmptyDailyState(),
+      day2: createEmptyDailyState(),
+      coordinator: null,
+    };
   }
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      return { day1: createEmptyDailyState(), day2: createEmptyDailyState(), coordinator: null };
+      return {
+        day1: createEmptyDailyState(),
+        day2: createEmptyDailyState(),
+        coordinator: null,
+      };
     }
     const parsed = JSON.parse(raw) as EnemState;
     return {
@@ -293,7 +869,11 @@ function safeLoadState(): EnemState {
       coordinator: parsed.coordinator ?? null,
     };
   } catch {
-    return { day1: createEmptyDailyState(), day2: createEmptyDailyState(), coordinator: null };
+    return {
+      day1: createEmptyDailyState(),
+      day2: createEmptyDailyState(),
+      coordinator: null,
+    };
   }
 }
 
@@ -399,7 +979,13 @@ function buildCurrentStage(now: Date): string {
 function getNextExamTarget(now: Date) {
   const tzNow = getSaoPauloNow();
 
-  const makeLocal = (y: number, m: number, d: number, h: number, mi: number) =>
+  const makeLocal = (
+    y: number,
+    m: number,
+    d: number,
+    h: number,
+    mi: number,
+  ) =>
     new Date(
       new Date(Date.UTC(y, m - 1, d, h, mi, 0)).toLocaleString("en-US", {
         timeZone: "America/Sao_Paulo",
@@ -467,7 +1053,7 @@ export function useEnem2025() {
     }
   }, [theme]);
 
-  // Persistir estado
+  // Persistir estado principal
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -485,6 +1071,7 @@ export function useEnem2025() {
     }
   }
 
+  // Horários oficiais
   const officialSchedule = useMemo(() => {
     if (!coordinator) return null;
     return {
@@ -658,7 +1245,10 @@ export function useEnem2025() {
   }, [now, coordinator, officialSchedule, examRunning, firedAlerts]);
 
   function initializeCoordinator(payload: CoordinatorData) {
-    setState((prev) => ({ ...prev, coordinator: { ...payload } }));
+    setState((prev) => ({
+      ...prev,
+      coordinator: { ...payload },
+    }));
     showSuccess(
       `Bem-vinda(o), ${payload.name}! Sistema pronto para o ENEM - Dia ${payload.examDay}.`,
     );
@@ -666,7 +1256,9 @@ export function useEnem2025() {
 
   function toggleTheme() {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
-    showSuccess(`Tema ${theme === "light" ? "escuro" : "claro"} ativado.`);
+    showSuccess(
+      `Tema ${theme === "light" ? "escuro" : "claro"} ativado.`,
+    );
   }
 
   function toggleChecklistItem(
@@ -720,7 +1312,10 @@ export function useEnem2025() {
         };
       }
 
-      return { ...prev, [list]: nextList };
+      return {
+        ...prev,
+        [list]: nextList,
+      };
     });
   }
 
@@ -738,7 +1333,9 @@ export function useEnem2025() {
     critical: boolean;
   }) {
     if (!currentDay) {
-      showError("Defina o dia do exame antes de registrar ocorrências.");
+      showError(
+        "Defina o dia do exame antes de registrar ocorrências.",
+      );
       return;
     }
     if (!data.type || !data.description) {
@@ -786,7 +1383,11 @@ export function useEnem2025() {
       coordinator: null,
     });
     setFiredAlerts({});
-    setExamTimer({ manualStart: false, startedAt: null, durationMs: 0 });
+    setExamTimer({
+      manualStart: false,
+      startedAt: null,
+      durationMs: 0,
+    });
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(STORAGE_KEY);
       window.localStorage.removeItem(STORAGE_TAB_KEY);
