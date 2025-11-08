@@ -29,6 +29,8 @@ const Index = () => {
     setActiveTab,
     currentStage,
     examTimeRemaining,
+    examRunning,
+    examElapsedLabel,
     preparationItems,
     morningItems,
     closingItems,
@@ -40,6 +42,7 @@ const Index = () => {
     downloadPdfReport,
     nextExamCountdownLabel,
     nextExamCountdownValue,
+    startExamManually,
   } = useEnem2025();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -53,8 +56,10 @@ const Index = () => {
 
   const coordinator = state.coordinator;
 
-  const formattedNow = now.toLocaleTimeString("pt-BR", {
-    timeZone: "America/Sao_Paulo",
+  const saoPauloNow = new Date(
+    now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }),
+  );
+  const formattedNow = saoPauloNow.toLocaleTimeString("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
@@ -217,7 +222,7 @@ const Index = () => {
               </header>
             )}
 
-            {/* Tabs (renomeando visualmente Durante para Prova) */}
+            {/* Tabs */}
             {isMainContent && (
               <nav className="bg-card px-2 pb-2 pt-1 border-b border-border">
                 <div className="tabbar-scroll">
@@ -285,9 +290,13 @@ const Index = () => {
                   {activeTab === "during" && (
                     <DuringTab
                       examTimeRemaining={examTimeRemaining}
+                      examElapsedLabel={examElapsedLabel}
+                      examRunning={examRunning}
                       stats={state.stats}
                       occurrences={state.occurrences}
                       onAddOccurrence={addOccurrence}
+                      onStartExamManually={startExamManually}
+                      saoPauloTime={formattedNow}
                     />
                   )}
                   {activeTab === "closing" && (
@@ -326,7 +335,6 @@ const Index = () => {
         </div>
       )}
 
-      {/* BottomNav global: só mostra quando já temos coordenador */}
       {coordinator && (
         <BottomNav
           variant="root"
