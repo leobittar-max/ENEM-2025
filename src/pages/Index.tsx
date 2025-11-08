@@ -108,11 +108,9 @@ const Index = () => {
     !showHistory && !showSupervision && showLayout && coordinator;
 
   return (
-    <div
-      className={cn(
-        "min-h-screen w-full bg-background text-foreground no-x-overflow pb-14",
-      )}
-    >
+    <div className={cn(
+      "min-h-screen w-full bg-background text-foreground no-x-overflow pb-14",
+    )}>
       <SetupModal open={!coordinator} onSubmit={initializeCoordinator} />
 
       {completionDialog.open && (
@@ -181,7 +179,6 @@ const Index = () => {
 
           {/* Main */}
           <div className="flex-1 flex flex-col app-safe-area">
-            {/* AppBar */}
             {isMainContent && (
               <header className="sticky top-0 z-30 bg-card shadow-sm border-b border-border px-4 pt-2 pb-2 flex items-center gap-3">
                 <button
@@ -222,13 +219,12 @@ const Index = () => {
               </header>
             )}
 
-            {/* Tabs */}
             {isMainContent && (
               <nav className="bg-card px-2 pb-2 pt-1 border-b border-border">
                 <div className="tabbar-scroll">
                   <TabItem
                     label="Preparação"
-                    icon="📋"
+                    icon="🧾"
                     active={activeTab === "preparation"}
                     onClick={() => setActiveTab("preparation")}
                   />
@@ -240,7 +236,7 @@ const Index = () => {
                   />
                   <TabItem
                     label="Prova"
-                    icon="🕒"
+                    icon="📱"
                     active={activeTab === "during"}
                     onClick={() => setActiveTab("during")}
                   />
@@ -260,7 +256,6 @@ const Index = () => {
               </nav>
             )}
 
-            {/* Conteúdo */}
             <main className="flex-1 px-4 pt-2 pb-3 md:px-6 space-y-3 no-x-overflow">
               {showHistory ? (
                 <LogPanel log={state.log} />
