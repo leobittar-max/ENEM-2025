@@ -75,21 +75,6 @@
       ]
     }
   ],
-  "screenshots": [
-    {
-      "src": "/icons/screenshot-dashboard-1280x720.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "label": "Painel do Coordenador com checklists, histórico e supervisão."
-    },
-    {
-      "src": "/icons/screenshot-room-720x1280.png",
-      "sizes": "720x1280",
-      "type": "image/png",
-      "label": "Checklist mobile do Chefe de Sala em modo standalone."
-    }
-  ],
   "prefer_related_applications": false,
-  "related_applications": [],
-  "iarc_rating_id": "PWA-ALL-AGES"
+  "related_applications": []
 }
