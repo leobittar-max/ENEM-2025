@@ -1,5 +1,14 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./globals.css";
+import { registerServiceWorker } from "./pwa";
 
-createRoot(document.getElementById("root")!).render(<App />);
+const container = document.getElementById("root");
+
+if (container) {
+  const root = createRoot(container);
+  root.render(<App />);
+}
+
+// Registrar PWA / Service Worker
+registerServiceWorker();
