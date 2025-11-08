@@ -246,7 +246,7 @@ const Index = () => {
                   />
                   <TabItem
                     label="Encerrar"
-                    icon="🔒"
+                    icon="📦"
                     active={activeTab === "closing"}
                     onClick={() => setActiveTab("closing")}
                   />
