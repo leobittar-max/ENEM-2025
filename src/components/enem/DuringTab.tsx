@@ -4,6 +4,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { AppChecklistSection } from "@/components/enem/AppChecklistSection";
@@ -23,6 +30,72 @@ interface DuringTabProps {
   saoPauloTime: string;
 }
 
+const OCCURRENCE_OPTIONS = [
+  {
+    group: "Atrasos / Presença",
+    items: [
+      "Chefe de sala em atraso",
+      "Aplicador/fiscal em atraso",
+      "Colaborador ausente (substituição)",
+      "Candidato em atraso (tentativa de entrada após fechamento)",
+    ],
+  },
+  {
+    group: "Materiais / Malotes",
+    items: [
+      "Malote com lacre danificado",
+      "Malote com numeração divergente",
+      "Quantidade de provas insuficiente",
+      "Falta de envelopes porta-objetos",
+      "Erro em listas de presença/atas",
+    ],
+  },
+  {
+    group: "Documento / Identificação",
+    items: [
+      "Documento de identificação inválido",
+      "Documento digital não aceito",
+      "Nome social / divergência cadastral",
+    ],
+  },
+  {
+    group: "Conduta / Disciplina",
+    items: [
+      "Uso de celular ou eletrônico durante a prova",
+      "Conversas suspeitas / tentativa de cola",
+      "Descumprimento de orientações em sala",
+      "Candidato se recusou a guardar objeto proibido",
+    ],
+  },
+  {
+    group: "Segurança / Saúde",
+    items: [
+      "Ocorrência médica com candidato",
+      "Ocorrência médica com colaborador",
+      "Evacuação de sala ou prédio",
+      "Briga, ameaça ou situação de risco",
+    ],
+  },
+  {
+    group: "Infraestrutura",
+    items: [
+      "Queda de energia",
+      "Ruído externo intenso",
+      "Problema em banheiro/bebedouro",
+      "Sala sem condições adequadas",
+    ],
+  },
+  {
+    group: "Fluxo da prova",
+    items: [
+      "Problema na abertura de portões",
+      "Problema na abertura dos malotes",
+      "Atraso na leitura de avisos obrigatórios",
+      "Erro no horário de encerramento em alguma sala",
+    ],
+  },
+];
+
 export const DuringTab = ({
   examTimeRemaining,
   examElapsedLabel,
@@ -38,10 +111,30 @@ export const DuringTab = ({
     description: "",
     critical: false,
   });
+  const [selectedType, setSelectedType] = useState<string>("");
+  const [customType, setCustomType] = useState<string>("");
 
   const handleSubmit = () => {
-    onAddOccurrence(form);
+    const finalType =
+      selectedType === "custom"
+        ? customType.trim()
+        : selectedType || form.type.trim();
+
+    if (!finalType) {
+      // Mantém comportamento simples: exige um tipo antes de salvar
+      return;
+    }
+
+    onAddOccurrence({
+      type: finalType,
+      description: form.description.trim(),
+      critical: form.critical,
+    });
+
+    // Reset amigável
     setForm({ type: "", description: "", critical: false });
+    setSelectedType("");
+    setCustomType("");
   };
 
   const total = stats.present + stats.absent || 1;
@@ -55,7 +148,7 @@ export const DuringTab = ({
 
   return (
     <div className="space-y-4">
-      {/* HERO TIMER - estilo app premium */}
+      {/* HERO TIMER */}
       <div className="relative overflow-hidden rounded-3xl border border-primary/15 bg-gradient-to-br from-primary/4 via-background to-primary/5 shadow-lg px-4 py-4 flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex flex-col gap-0.5">
@@ -69,7 +162,6 @@ export const DuringTab = ({
           <span className="text-3xl md:text-4xl">🕒</span>
         </div>
 
-        {/* Countdown grande */}
         <div className="flex items-baseline gap-2">
           <div
             className={cn(
@@ -98,7 +190,6 @@ export const DuringTab = ({
           </div>
         </div>
 
-        {/* Barra de progresso da prova */}
         <div className="mt-1 space-y-1.5">
           <div className="flex items-center justify-between text-[0.68rem] text-muted-foreground">
             <span>Presença da equipe</span>
@@ -121,7 +212,6 @@ export const DuringTab = ({
           </div>
         </div>
 
-        {/* Ação de controle */}
         <div className="mt-1 flex flex-wrap items-center gap-2">
           {!examRunning && (
             <Button
@@ -144,7 +234,6 @@ export const DuringTab = ({
           )}
         </div>
 
-        {/* Glow decorativo */}
         <div className="pointer-events-none absolute -right-10 -bottom-10 h-24 w-24 rounded-full bg-primary/8 blur-2xl" />
       </div>
 
@@ -157,32 +246,93 @@ export const DuringTab = ({
         </p>
       </div>
 
-      {/* Form rápido de ocorrência */}
+      {/* Form de ocorrência melhorado */}
       <div className="card-elevated space-y-2">
         <div className="text-[0.78rem] font-semibold flex items-center gap-2">
           ➕ Registrar ocorrência
         </div>
+
+        {/* Tipo com dropdown amplo */}
         <div className="space-y-1">
-          <Label className="text-[0.7rem]">Tipo de Ocorrência</Label>
-          <Input
-            placeholder="Ex: atraso de malote, ausência de fiscal, falha de energia..."
-            value={form.type}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, type: e.target.value }))
-            }
-          />
+          <Label className="text-[0.7rem]">
+            Tipo de Ocorrência (selecione ou escreva)
+          </Label>
+          <Select
+            value={selectedType}
+            onValueChange={(value) => {
+              setSelectedType(value);
+              if (value !== "custom") {
+                setCustomType("");
+              }
+            }}
+          >
+            <SelectTrigger className="h-10 text-[0.78rem]">
+              <SelectValue placeholder="Selecione um tipo de ocorrência" />
+            </SelectTrigger>
+            <SelectContent className="max-h-72 text-[0.75rem]">
+              {OCCURRENCE_OPTIONS.map((group) => (
+                <div key={group.group}>
+                  <div className="px-2 pt-1 pb-0.5 text-[0.62rem] font-semibold uppercase text-muted-foreground">
+                    {group.group}
+                  </div>
+                  {group.items.map((item) => (
+                    <SelectItem
+                      key={item}
+                      value={item}
+                      className="text-[0.75rem] py-1.5"
+                    >
+                      {item}
+                    </SelectItem>
+                  ))}
+                </div>
+              ))}
+              <div className="mt-1 border-t border-border/40" />
+              <SelectItem
+                value="custom"
+                className="text-[0.75rem] py-1.5 font-semibold text-primary"
+              >
+                ✏️ Outro (digitar manualmente)
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Campo para tipo manual quando selecionado */}
+          {selectedType === "custom" && (
+            <Input
+              placeholder="Digite o tipo de ocorrência (ex: Situação específica deste local)"
+              value={customType}
+              onChange={(e) => setCustomType(e.target.value)}
+              className="mt-1 h-10 text-[0.78rem]"
+            />
+          )}
+
+          {/* Fallback: se ninguém escolher no select, permite digitar tipo direto */}
+          {selectedType === "" && (
+            <Input
+              placeholder="Ou digite rapidamente o tipo (opcional, se não for usar a lista acima)"
+              value={form.type}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, type: e.target.value }))
+              }
+              className="mt-1 h-9 text-[0.72rem]"
+            />
+          )}
         </div>
+
+        {/* Descrição */}
         <div className="space-y-1">
-          <Label className="text-[0.7rem]">Descrição</Label>
+          <Label className="text-[0.7rem]">Descrição detalhada</Label>
           <Textarea
-            placeholder="Descreva rapidamente o que ocorreu e as ações tomadas..."
+            placeholder="Descreva o que ocorreu, local/sala envolvida, horário e providências adotadas..."
             value={form.description}
             onChange={(e) =>
               setForm((f) => ({ ...f, description: e.target.value }))
             }
-            className="min-h-[72px] text-[0.78rem]"
+            className="min-h-[80px] text-[0.78rem]"
           />
         </div>
+
+        {/* Crítica */}
         <div className="flex items-center gap-2 pt-1">
           <Checkbox
             id="occCritical"
@@ -198,6 +348,7 @@ export const DuringTab = ({
             Marcar como ocorrência crítica
           </Label>
         </div>
+
         <Button
           size="sm"
           className="mt-1 w-full touch-target text-[0.78rem] font-semibold"
@@ -208,7 +359,7 @@ export const DuringTab = ({
         </Button>
       </div>
 
-      {/* Checklist específico do app oficial do ENEM (não interfere nos demais) */}
+      {/* Checklist do app oficial do ENEM */}
       <AppChecklistSection phase="during" />
 
       {/* Lista de ocorrências */}
