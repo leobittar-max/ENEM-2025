@@ -88,5 +88,8 @@
       "type": "image/png",
       "label": "Checklist mobile do Chefe de Sala em modo standalone."
     }
-  ]
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "iarc_rating_id": "PWA-ALL-AGES"
 }
