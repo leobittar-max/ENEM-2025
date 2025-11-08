@@ -68,8 +68,9 @@ const ChefeSalaPage = () => {
                 <div
                   key={item.id}
                   className={cn(
-                    "flex items-start gap-2 rounded-2xl border bg-card px-3 py-2 shadow-sm",
-                    item.checked && "border-primary/40 bg-primary/5",
+                    "flex items-start gap-2 rounded-2xl border bg-card px-3 py-2 shadow-sm transition-colors",
+                    item.checked &&
+                      "border-primary/40 bg-primary/5 opacity-70",
                   )}
                 >
                   <input
@@ -82,7 +83,13 @@ const ChefeSalaPage = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start gap-1.5">
                       <div className="flex-1 min-w-0">
-                        <div className="text-[10px] font-semibold text-foreground">
+                        <div
+                          className={cn(
+                            "text-[10px] font-semibold text-foreground",
+                            item.checked &&
+                              "line-through text-muted-foreground",
+                          )}
+                        >
                           {item.id} · {item.titulo}
                         </div>
                         {item.updated_at && (

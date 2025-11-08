@@ -26,7 +26,7 @@ export const ClosingTab = ({
             Encerramento do dia
           </div>
           <p className="text-[10px] text-muted-foreground">
-            Foque nos itens críticos com lacres, malotes e documentação antes de liberar o local.
+            Foque nos itens críticos com lacres, malotes e documentação; os itens concluídos aparecem levemente apagados.
           </p>
         </div>
       </div>
@@ -38,8 +38,8 @@ export const ClosingTab = ({
             <div
               key={item.id}
               className={cn(
-                "checklist-item",
-                isChecked && "bg-primary/3 border-primary/30",
+                "checklist-item transition-colors",
+                isChecked && "bg-primary/3 border-primary/30 opacity-70",
                 item.critical && !isChecked && "border-amber-400/80",
               )}
             >
@@ -53,7 +53,12 @@ export const ClosingTab = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-start gap-1.5">
                   <div className="flex-1 min-w-0">
-                    <div className="checklist-title">
+                    <div
+                      className={cn(
+                        "checklist-title",
+                        isChecked && "line-through text-muted-foreground",
+                      )}
+                    >
                       {item.text}
                       {item.critical && (
                         <span className="ml-1 text-[9px] text-destructive">
@@ -61,7 +66,12 @@ export const ClosingTab = ({
                         </span>
                       )}
                     </div>
-                    <div className="checklist-subtitle">
+                    <div
+                      className={cn(
+                        "checklist-subtitle",
+                        isChecked && "text-muted-foreground/80",
+                      )}
+                    >
                       {item.role || "Coordenador"} · Encerramento
                     </div>
                   </div>

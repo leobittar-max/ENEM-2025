@@ -22,7 +22,7 @@ export const PreparationTab = ({
             Preparação prévia do local
           </div>
           <p className="text-[10px] text-muted-foreground">
-            Execute estes passos antes do dia da aplicação. Itens concluídos ficarão marcados para visão rápida.
+            Execute estes passos antes do dia da aplicação. Itens concluídos ficam levemente apagados para rápida identificação.
           </p>
         </div>
       </div>
@@ -34,8 +34,8 @@ export const PreparationTab = ({
             <div
               key={item.id}
               className={cn(
-                "checklist-item",
-                isChecked && "bg-primary/3 border-primary/30",
+                "checklist-item transition-colors",
+                isChecked && "bg-primary/3 border-primary/30 opacity-70",
               )}
             >
               <input
@@ -48,7 +48,12 @@ export const PreparationTab = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-start gap-1.5">
                   <div className="flex-1 min-w-0">
-                    <div className={cn("checklist-title")}>
+                    <div
+                      className={cn(
+                        "checklist-title",
+                        isChecked && "line-through text-muted-foreground",
+                      )}
+                    >
                       {item.text}
                       {item.critical && (
                         <span className="ml-1 text-[9px] text-destructive">
@@ -56,7 +61,12 @@ export const PreparationTab = ({
                         </span>
                       )}
                     </div>
-                    <div className="checklist-subtitle">
+                    <div
+                      className={cn(
+                        "checklist-subtitle",
+                        isChecked && "text-muted-foreground/80",
+                      )}
+                    >
                       {item.role || "Coordenador"} · Pré-prova
                     </div>
                   </div>
