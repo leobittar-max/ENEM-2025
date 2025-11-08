@@ -91,36 +91,52 @@ const STORAGE_KEY = "enem2025_state_v2";
 const STORAGE_THEME_KEY = "enem2025_theme_v1";
 const STORAGE_TAB_KEY = "enem2025_tab_v1";
 
-/**
- * Checklist completo do Coordenador baseado no anexo oficial.
- * (Conteúdo resumido aqui; manter exatamente os itens já configurados.)
- */
 const checklistItemsBase: ChecklistItem[] = [
   {
     id: "prep-01",
     phase: "preparation",
     text: "Receber e conferir caixas de materiais administrativos",
     role: "Coordenador",
-    info: {
-      titulo: "Conferência completa do kit administrativo",
-      corpo:
-        "Confira se as caixas trazem todos os impressos e reservas (listas de presença, atas, cartões-resposta/folha de redação, folhas de rascunho), crachás, envelopes de sala e envelopes porta-objetos. Registre o recebimento no sistema da Instituição Aplicadora e separe por sala conforme o Relatório de Participantes e Salas. Se faltar algo, contate imediatamente a Aplicadora.",
-      fonte: { manual: "Coordenador", pagina: 12 },
-    },
     critical: true,
   },
-  // ...demais itens exatamente como já definidos anteriormente...
+  {
+    id: "prep-02",
+    phase: "preparation",
+    text: "Organizar equipe e distribuição de salas conforme relação oficial",
+    role: "Coordenador",
+  },
+  {
+    id: "man-01",
+    phase: "morning",
+    text: "Confirmar abertura dos portões do local",
+    role: "Coordenador",
+    suggestedTime: "12:00",
+  },
+  {
+    id: "man-02",
+    phase: "morning",
+    text: "Orientar chefes de sala sobre conferência de materiais",
+    role: "Coordenador",
+    suggestedTime: "12:30",
+  },
+  {
+    id: "dur-01",
+    phase: "during",
+    text: "Acompanhar ocorrências reportadas pelas salas",
+    role: "Coordenador",
+  },
+  {
+    id: "close-01",
+    phase: "closing",
+    text: "Conferir lacres e malotes ao término das provas",
+    role: "Coordenador",
+    critical: true,
+  },
   {
     id: "pos-01",
     phase: "post",
     text: "Entrega à Instituição Aplicadora e relatório final",
     role: "Coordenador",
-    info: {
-      titulo: "Devolução formal e fechamento",
-      corpo:
-        "Entregue malotes e equipamentos, finalize relatórios/ocorrências no app e valide pendências com chefes de sala.",
-      fonte: { manual: "Coordenador", pagina: 60 },
-    },
   },
 ];
 
@@ -247,8 +263,9 @@ function buildCurrentStage(now: Date): string {
   return "Preparação";
 }
 
-// Calcula alvo do próximo dia de prova (12:00 horário local) e texto de countdown,
-// usando a data/hora atual. Após o horário de início, passa para o próximo dia.
+// Calcula alvo do próximo dia de prova (12:00 horário local).
+// Depois de 1º dia, passa a contar automaticamente para o 2º dia.
+// Após início do 2º dia, não há próximo alvo.
 function getNextExamTarget(now: Date):
   | {
       label: string;
@@ -258,13 +275,9 @@ function getNextExamTarget(now: Date):
   const tz = "America/Sao_Paulo";
 
   const makeLocalDate = (y: number, m: number, d: number, h: number, mi: number) => {
-    // Cria objeto Date representando (y-m-d h:mi) em São Paulo.
-    const parts = new Date(Date.UTC(y, m - 1, d, h, mi, 0));
-    // Ajuste usando timezone string para garantir consistência
-    const asLocal = new Date(
-      parts.toLocaleString("en-US", { timeZone: tz }),
-    );
-    return asLocal;
+    const utc = new Date(Date.UTC(y, m - 1, d, h, mi, 0));
+    const local = new Date(utc.toLocaleString("en-US", { timeZone: tz }));
+    return local;
   };
 
   const day1Start = makeLocalDate(2025, 11, 9, 12, 0);
@@ -335,7 +348,7 @@ export function useEnem2025() {
 
   const daily = getDailyState();
 
-  // Atualiza "now" a cada segundo - base para relógio e countdown
+  // Atualiza agora a cada segundo (base para relógio e countdown)
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
@@ -349,7 +362,7 @@ export function useEnem2025() {
     }
   }, [theme]);
 
-  // Persistência de estado principal
+  // Persistência
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -395,7 +408,7 @@ export function useEnem2025() {
     )}:${String(s).padStart(2, "0")}`;
   }, [now, currentTimes]);
 
-  // Próximo dia de prova: recalculado em cima de "now" a cada tick
+  // Próximo dia de provas (1º ou 2º), recalculado continuamente
   const nextExam = useMemo(() => getNextExamTarget(now), [now]);
   const nextExamCountdownLabel = nextExam
     ? nextExam.label
@@ -404,7 +417,7 @@ export function useEnem2025() {
     ? formatCountdown(nextExam.diffMs)
     : "--:--:--";
 
-  // Alertas relativos aos horários do dia
+  // Alertas próximos aos horários oficiais
   useEffect(() => {
     if (!coordinator || !currentTimes) return;
 
