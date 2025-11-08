@@ -102,7 +102,7 @@
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-    font-size: 0.95rem; /* leve aumento global para leitura no PWA */
+    font-size: 0.95rem;
   }
 
   input,
@@ -150,18 +150,19 @@
 }
 
 .tab-item {
-  @apply inline-flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-full text-[0.7rem]
-    text-muted-foreground touch-target;
+  @apply inline-flex flex-col items-center justify-center gap-0.25 px-3 py-2
+    text-[0.7rem] text-muted-foreground touch-target;
   flex-shrink: 0;
 }
 
+/* Aba ativa: sem fundo circular; apenas texto/ícone azuis e traço inferior */
 .tab-item-active {
-  @apply text-primary font-semibold bg-primary/10 relative;
+  @apply text-primary font-semibold relative;
 }
 
 .tab-item-active::after {
   content: "";
-  @apply absolute left-4 right-4 bottom-0.5 h-[3px] rounded-full bg-primary;
+  @apply absolute left-2 right-2 -bottom-0.5 h-[3px] rounded-full bg-primary;
 }
 
 /* Checklist base */
@@ -177,7 +178,7 @@
   @apply text-[0.7rem] text-muted-foreground leading-snug;
 }
 
-/* Animação de marcação suave: leve destaque ao marcar */
+/* Animação de marcação suave */
 @keyframes checklist-marked {
   0% {
     background-color: rgba(41, 98, 255, 0.06);

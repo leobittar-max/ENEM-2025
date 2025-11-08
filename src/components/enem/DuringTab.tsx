@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { AppChecklistSection } from "@/components/enem/AppChecklistSection";
 
 interface DuringTabProps {
   examTimeRemaining: string;
@@ -206,6 +207,9 @@ export const DuringTab = ({
           Salvar ocorrência
         </Button>
       </div>
+
+      {/* Checklist específico do app oficial do ENEM (não interfere nos demais) */}
+      <AppChecklistSection phase="during" />
 
       {/* Lista de ocorrências */}
       <OccurrenceList occurrences={occurrences} />
