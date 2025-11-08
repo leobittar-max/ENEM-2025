@@ -23,13 +23,13 @@
   ],
   "icons": [
     {
-      "src": "/icons/enem-512.png",
-      "sizes": "512x512",
+      "src": "/icons/enem-192.png",
+      "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icons/enem-192.png",
-      "sizes": "192x192",
+      "src": "/icons/enem-512.png",
+      "sizes": "512x512",
       "type": "image/png"
     },
     {
@@ -86,7 +86,7 @@
       "sizes": "720x1280",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Checklist detalhado de preparação, durante a prova e encerramento."
+      "label": "Checklist detalhado de preparação e execução do ENEM 2025."
     }
   ],
   "prefer_related_applications": false,
