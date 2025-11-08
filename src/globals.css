@@ -150,12 +150,12 @@
 }
 
 .tab-item {
-  @apply inline-flex flex-col items-center justify-center gap-0.25 px-3 py-2
+  @apply inline-flex flex-col items-center justify-center gap-0.5 px-3 py-2
     text-[0.7rem] text-muted-foreground touch-target;
   flex-shrink: 0;
 }
 
-/* Aba ativa: sem fundo circular; apenas texto/ícone azuis e traço inferior */
+/* Aba ativa: apenas texto/ícone azuis e traço inferior */
 .tab-item-active {
   @apply text-primary font-semibold relative;
 }
