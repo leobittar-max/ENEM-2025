@@ -34,12 +34,13 @@ export const BottomNav = ({
       label: "Painel",
       icon: "🏠",
       isActive: isRoot
-        ? !currentPath.includes("/chefe/") && !currentPath.includes("/relatorio")
+        ? !currentPath.includes("/chefe/") &&
+          !currentPath.includes("/relatorio") &&
+          !currentPath.includes("supervisao") &&
+          !currentPath.includes("supervisionar")
         : currentPath === "/",
       onClick: () => {
-        if (isRoot && onNavigatePanel) {
-          onNavigatePanel();
-        }
+        if (isRoot && onNavigatePanel) onNavigatePanel();
       },
       to: "/",
     },
@@ -51,9 +52,7 @@ export const BottomNav = ({
         currentPath.includes("supervisao") ||
         currentPath.includes("supervisionar"),
       onClick: () => {
-        if (isRoot && onNavigateSupervision) {
-          onNavigateSupervision();
-        }
+        if (isRoot && onNavigateSupervision) onNavigateSupervision();
       },
       to: "/",
     },
@@ -61,11 +60,9 @@ export const BottomNav = ({
       key: "prova",
       label: "Prova",
       icon: "🕒",
-      isActive: currentPath.includes("prova") || false,
+      isActive: false, // controlado via callback no root
       onClick: () => {
-        if (isRoot && onNavigateProva) {
-          onNavigateProva();
-        }
+        if (isRoot && onNavigateProva) onNavigateProva();
       },
       to: "/",
     },
@@ -75,9 +72,7 @@ export const BottomNav = ({
       icon: "📑",
       isActive: currentPath.includes("relatorio"),
       onClick: () => {
-        if (isRoot && onNavigateRelatorio) {
-          onNavigateRelatorio();
-        }
+        if (isRoot && onNavigateRelatorio) onNavigateRelatorio();
       },
       to: "/",
     },
@@ -98,17 +93,14 @@ export const BottomNav = ({
           const content = (
             <button
               type="button"
-              onClick={
-                isRoot
-                  ? item.onClick
-                  : undefined
-              }
+              onClick={isRoot ? item.onClick : undefined}
               className={cn(
                 "flex-1 flex flex-col items-center justify-center gap-0.5",
-                "py-1.5 rounded-2xl transition-all touch-target min-h-[42px]",
+                "py-1.5 touch-target min-h-[42px]",
+                "relative transition-colors",
                 active
-                  ? "bg-primary/10 text-primary font-semibold"
-                  : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
+                  ? "text-primary font-semibold"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <span className="text-[1.2rem] leading-none">
@@ -117,11 +109,12 @@ export const BottomNav = ({
               <span className="text-[0.7rem] tracking-wide">
                 {item.label}
               </span>
+              {active && (
+                <span className="absolute left-3 right-3 bottom-0 h-[3px] rounded-full bg-primary" />
+              )}
             </button>
           );
 
-          // Nas páginas externas, usamos Link para ir à rota raiz
-          // e o painel principal decide o que mostrar.
           if (!isRoot) {
             return (
               <Link
