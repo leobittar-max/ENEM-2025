@@ -16,39 +16,37 @@ export const MorningTab = ({
   onToggle,
 }: MorningTabProps) => {
   const diaLabel = examDay === 1 ? "1º dia" : "2º dia";
-  const sortedItems = getSortedByCompletion(items, completed);
 
   return (
     <div className="space-y-3">
       <div className="card-elevated flex items-start gap-2">
-        <span className="mt-0.5">🌅</span>
+        <span className="mt-0.5 text-base">🌅</span>
         <div className="space-y-0.5">
-          <div className="text-xs font-semibold">
+          <div className="text-[0.9rem] font-semibold">
             Manhã do exame · {diaLabel}
           </div>
-          <p className="text-[10px] text-muted-foreground">
-            Ao concluir, o item fica cinza e vai para o final da lista, mantendo
-            em evidência o que ainda precisa ser feito.
+          <p className="text-[0.75rem] text-muted-foreground">
+            Use os horários sugeridos como referência. A ordem permanece fixa para facilitar a navegação rápida.
           </p>
         </div>
       </div>
 
       <div className="space-y-2">
-        {sortedItems.map((item) => {
+        {items.map((item) => {
           const isChecked = completed.includes(item.id);
           return (
             <div
               key={item.id}
               onClick={() => onToggle(item.id)}
               className={cn(
-                "checklist-item transition-colors transition-shadow duration-200 cursor-pointer select-none",
+                "checklist-item cursor-pointer select-none transition-colors transition-shadow duration-200",
                 isChecked
-                  ? "bg-gray-100/95 border-gray-300 text-gray-500 shadow-none"
+                  ? "bg-gray-100/95 border-gray-300 text-gray-600 shadow-none checklist-marked"
                   : "bg-card border-border text-foreground hover:bg-primary/5 hover:border-primary/30 hover:shadow-sm",
               )}
             >
-              <div className="flex flex-col items-center justify-center w-10">
-                <div className="text-[9px] font-semibold text-primary truncate">
+              <div className="flex flex-col items-center justify-center w-12">
+                <div className="text-[0.7rem] font-semibold text-primary truncate">
                   {item.suggestedTime || "--"}
                 </div>
               </div>
@@ -56,7 +54,7 @@ export const MorningTab = ({
                 type="checkbox"
                 className={cn(
                   "h-5 w-5 rounded border border-border cursor-pointer mt-0.5 transition-colors",
-                  isChecked && "border-gray-400 bg-gray-200",
+                  isChecked && "border-primary bg-primary text-primary-foreground",
                 )}
                 checked={isChecked}
                 readOnly
@@ -67,7 +65,7 @@ export const MorningTab = ({
                     <div className="checklist-title">
                       {item.text}
                       {item.critical && (
-                        <span className="ml-1 text-[9px] text-destructive">
+                        <span className="ml-1 text-[0.7rem] text-destructive">
                           ⚡
                         </span>
                       )}
@@ -92,13 +90,3 @@ export const MorningTab = ({
     </div>
   );
 };
-
-function getSortedByCompletion(
-  items: ChecklistItem[],
-  completed: string[],
-): ChecklistItem[] {
-  const set = new Set(completed);
-  const pending = items.filter((i) => !set.has(i.id));
-  const done = items.filter((i) => set.has(i.id));
-  return [...pending, ...done];
-}

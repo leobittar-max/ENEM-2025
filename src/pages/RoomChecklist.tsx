@@ -42,19 +42,13 @@ const RoomChecklistPage = () => {
     setChecked(loadChecked(roomCode));
   }, [roomCode]);
 
-  const sortedItems: RoomChecklistItem[] = useMemo(() => {
-    const pending: RoomChecklistItem[] = [];
-    const done: RoomChecklistItem[] = [];
-    roomChecklistItems.forEach((item) => {
-      if (checked[item.id]) done.push(item);
-      else pending.push(item);
-    });
-    return [...pending, ...done];
-  }, [checked]);
+  const items: RoomChecklistItem[] = useMemo(
+    () => roomChecklistItems,
+    [],
+  );
 
-  const total = roomChecklistItems.length;
-  const completedCount = roomChecklistItems.filter((i) => checked[i.id])
-    .length;
+  const total = items.length;
+  const completedCount = items.filter((i) => checked[i.id]).length;
   const pendingCount = total - completedCount;
 
   const handleToggle = (id: string) => {
@@ -68,7 +62,7 @@ const RoomChecklistPage = () => {
 
   if (!roomCode) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-xs text-muted-foreground">
+      <div className="min-h-screen flex items-center justify-center bg-background text-[0.8rem] text-muted-foreground px-4 text-center">
         Código de sala não informado.
       </div>
     );
@@ -79,25 +73,25 @@ const RoomChecklistPage = () => {
       <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 text-center">
         <div className="card-elevated max-w-sm space-y-2">
           <div className="text-2xl">🤔</div>
-          <div className="text-sm font-semibold">
+          <div className="text-[0.9rem] font-semibold">
             Sala {roomCode} não encontrada
           </div>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[0.75rem] text-muted-foreground">
             Verifique se o endereço está correto. Exemplos válidos:
             <br />
-            <span className="font-mono text-[9px] block">
+            <span className="font-mono text-[0.7rem] block">
               https://enem-2025-kohl.vercel.app/101
             </span>
-            <span className="font-mono text-[9px] block">
+            <span className="font-mono text-[0.7rem] block">
               https://enem-2025-kohl.vercel.app/102
             </span>
-            <span className="font-mono text-[9px] block">
+            <span className="font-mono text-[0.7rem] block">
               https://enem-2025-kohl.vercel.app/103
             </span>
           </p>
           <Link
             to="/"
-            className="mt-1 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground px-3 py-1.5 text-[10px]"
+            className="mt-1 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground px-3 py-1.5 text-[0.8rem]"
           >
             Voltar ao painel do coordenador
           </Link>
@@ -108,23 +102,22 @@ const RoomChecklistPage = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col no-x-overflow">
-      {/* Cabeçalho fixo */}
       <header className="sticky top-0 z-20 bg-card/95 backdrop-blur border-b border-border px-4 pt-3 pb-2 shadow-sm">
         <div className="flex items-start gap-2">
           <div className="h-8 w-8 rounded-2xl bg-primary/10 flex items-center justify-center text-lg">
             🎓
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground">
               ENEM 2025 · Checklist Chefe de Sala
             </div>
-            <div className="text-sm font-semibold truncate">
+            <div className="text-[0.95rem] font-semibold truncate">
               Sala {room.code}
             </div>
-            <div className="text-[9px] text-muted-foreground truncate">
+            <div className="text-[0.75rem] text-muted-foreground truncate">
               {room.location}
             </div>
-            <div className="mt-0.5 grid grid-cols-2 gap-x-4 gap-y-0.5 text-[8px] text-muted-foreground">
+            <div className="mt-0.5 grid grid-cols-2 gap-x-4 gap-y-0.5 text-[0.7rem] text-muted-foreground">
               <div>
                 <span className="font-semibold text-foreground">Dia:</span>{" "}
                 {room.dateLabel}
@@ -148,34 +141,31 @@ const RoomChecklistPage = () => {
             </div>
           </div>
         </div>
-        <p className="mt-2 text-[9px] text-muted-foreground">
-          Este checklist foi elaborado com base nas orientações oficiais do
-          Manual do Chefe de Sala do ENEM 2025. Marque cada item à medida que
-          as ações forem sendo cumpridas. Itens concluídos ficam em cinza e
-          descem automaticamente, destacando o que ainda falta.
+        <p className="mt-2 text-[0.7rem] text-muted-foreground">
+          Marque cada item conforme os procedimentos forem executados. A ordem
+          segue o fluxo oficial para facilitar a leitura e evitar confusão.
         </p>
       </header>
 
-      {/* Lista de itens */}
       <main className="flex-1 px-4 pt-2 pb-4 space-y-2">
-        {sortedItems.map((item) => {
+        {items.map((item) => {
           const isChecked = !!checked[item.id];
           return (
             <div
               key={item.id}
               onClick={() => handleToggle(item.id)}
               className={cn(
-                "checklist-item mb-1 transition-all duration-200 cursor-pointer select-none",
+                "checklist-item mb-1 cursor-pointer select-none transition-all duration-200",
                 isChecked
-                  ? "bg-gray-100/95 border-gray-300 text-gray-500 shadow-none scale-[0.99]"
+                  ? "bg-gray-100/95 border-gray-300 text-gray-600 shadow-none scale-[0.99] checklist-marked"
                   : "bg-card border-border text-foreground hover:bg-primary/5 hover:border-primary/30 hover:shadow-sm",
               )}
             >
-              <div className="flex flex-col items-center justify-center w-14">
-                <div className="text-[8px] font-semibold text-primary truncate">
+              <div className="flex flex-col items-center justify-center w-16">
+                <div className="text-[0.65rem] font-semibold text-primary truncate">
                   {item.hora_sugerida || "--"}
                 </div>
-                <div className="text-[7px] text-muted-foreground truncate">
+                <div className="text-[0.6rem] text-muted-foreground truncate text-center">
                   {item.fase}
                 </div>
               </div>
@@ -185,21 +175,21 @@ const RoomChecklistPage = () => {
                 readOnly
                 className={cn(
                   "h-4 w-4 rounded border border-border cursor-pointer mt-0.5 transition-colors",
-                  isChecked && "border-gray-400 bg-gray-200",
+                  isChecked && "border-primary bg-primary text-primary-foreground",
                 )}
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-start gap-1.5">
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10px] font-semibold leading-snug">
+                    <div className="text-[0.8rem] font-semibold leading-snug">
                       {item.titulo}
                       {item.critical && (
-                        <span className="ml-1 text-[9px] text-destructive">
+                        <span className="ml-1 text-[0.7rem] text-destructive">
                           ⚡
                         </span>
                       )}
                     </div>
-                    <div className="text-[8px] text-muted-foreground">
+                    <div className="text-[0.65rem] text-muted-foreground">
                       {item.papel || "Chefe de Sala/Aplicador"}
                     </div>
                   </div>
@@ -216,18 +206,17 @@ const RoomChecklistPage = () => {
           );
         })}
 
-        {/* Resumo final */}
-        <div className="mt-3 grid grid-cols-2 gap-2 text-[9px]">
-          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 px-3 py-2 flex flex-col gap-0.5">
-            <div className="text-[11px]">
+        <div className="mt-3 grid grid-cols-2 gap-2 text-[0.7rem]">
+          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 px-3 py-2">
+            <div className="text-[0.8rem]">
               ✅ Itens concluídos:{" "}
               <span className="font-semibold text-emerald-700">
                 {completedCount} de {total}
               </span>
             </div>
           </div>
-          <div className="rounded-2xl bg-amber-50 border border-amber-200 px-3 py-2 flex flex-col gap-0.5">
-            <div className="text-[11px]">
+          <div className="rounded-2xl bg-amber-50 border border-amber-200 px-3 py-2">
+            <div className="text-[0.8rem]">
               ⚠️ Pendentes:{" "}
               <span className="font-semibold text-amber-700">
                 {pendingCount}
@@ -236,25 +225,9 @@ const RoomChecklistPage = () => {
           </div>
         </div>
 
-        <p className="mt-1 text-[7px] text-muted-foreground text-center">
-          As marcações ficam salvas somente neste dispositivo (offline friendly).
+        <p className="mt-1 text-[0.6rem] text-muted-foreground text-center">
+          As marcações ficam salvas somente neste dispositivo (offline).
         </p>
-
-        {/* Destaque rápido dos links de acesso para exemplo */}
-        <div className="mt-3 text-[8px] text-muted-foreground">
-          Exemplos de acesso direto para Chefes de Sala:
-          <div className="mt-1 grid gap-0.5">
-            <span className="font-mono">
-              https://enem-2025-kohl.vercel.app/101
-            </span>
-            <span className="font-mono">
-              https://enem-2025-kohl.vercel.app/102
-            </span>
-            <span className="font-mono">
-              https://enem-2025-kohl.vercel.app/103
-            </span>
-          </div>
-        </div>
       </main>
     </div>
   );

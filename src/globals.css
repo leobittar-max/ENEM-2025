@@ -102,18 +102,19 @@
     margin: 0;
     padding: 0;
     overflow-x: hidden;
+    font-size: 0.95rem; /* leve aumento global para leitura no PWA */
   }
 
   input,
   textarea,
   select {
-    @apply w-full border border-input bg-background rounded-xl px-3 py-3 text-sm outline-none
+    @apply w-full border border-input bg-background rounded-xl px-3 py-3 text-[0.9rem] outline-none
       focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary;
     min-height: 48px;
   }
 
   label {
-    @apply text-xs font-medium text-foreground;
+    @apply text-[0.7rem] font-medium text-foreground;
   }
 
   button {
@@ -123,8 +124,8 @@
 
 /* Layout helpers mobile-first */
 .app-safe-area {
-  padding-top: max(0.5rem, env(safe-area-inset-top));
-  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  padding-top: max(0.6rem, env(safe-area-inset-top));
+  padding-bottom: max(0.9rem, env(safe-area-inset-bottom));
 }
 
 /* Evita scroll horizontal indevido */
@@ -133,14 +134,14 @@
   overflow-x: hidden;
 }
 
-/* Cards */
+/* Cards com mais respiro */
 .card-elevated {
-  @apply rounded-2xl bg-card shadow-sm border border-border/80 px-4 py-3;
+  @apply rounded-2xl bg-card shadow-sm border border-border/80 px-4 py-3.5;
 }
 
 /* Touch targets */
 .touch-target {
-  min-height: 48px;
+  min-height: 44px;
 }
 
 /* TabBar */
@@ -149,7 +150,7 @@
 }
 
 .tab-item {
-  @apply inline-flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-full text-[10px]
+  @apply inline-flex flex-col items-center justify-center gap-0.25 px-3 py-2 rounded-full text-[0.7rem]
     text-muted-foreground touch-target;
   flex-shrink: 0;
 }
@@ -160,18 +161,38 @@
 
 .tab-item-active::after {
   content: "";
-  @apply absolute left-4 right-4 bottom-1 h-[3px] rounded-full bg-primary;
+  @apply absolute left-4 right-4 bottom-0.5 h-[3px] rounded-full bg-primary;
 }
 
-/* Checklist */
+/* Checklist base */
 .checklist-item {
   @apply flex items-center gap-3 rounded-2xl bg-card border border-border px-3 py-3 shadow-sm;
 }
 
 .checklist-title {
-  @apply text-xs font-semibold text-foreground truncate;
+  @apply text-[0.8rem] font-semibold text-foreground leading-snug;
 }
 
 .checklist-subtitle {
-  @apply text-[10px] text-muted-foreground truncate;
+  @apply text-[0.7rem] text-muted-foreground leading-snug;
+}
+
+/* Animação de marcação suave: leve destaque ao marcar */
+@keyframes checklist-marked {
+  0% {
+    background-color: rgba(41, 98, 255, 0.06);
+    transform: scale(0.99);
+  }
+  50% {
+    background-color: rgba(41, 98, 255, 0.12);
+    transform: scale(1.01);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+
+.checklist-marked {
+  animation: checklist-marked 220ms ease-out;
 }

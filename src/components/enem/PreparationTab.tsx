@@ -13,34 +13,31 @@ export const PreparationTab = ({
   completed,
   onToggle,
 }: PreparationTabProps) => {
-  const sortedItems = getSortedByCompletion(items, completed);
-
   return (
     <div className="space-y-3">
       <div className="card-elevated flex items-start gap-2">
-        <span className="mt-0.5">ℹ️</span>
+        <span className="mt-0.5 text-base">ℹ️</span>
         <div className="space-y-0.5">
-          <div className="text-xs font-semibold">
+          <div className="text-[0.9rem] font-semibold">
             Preparação prévia do local
           </div>
-          <p className="text-[10px] text-muted-foreground">
-            Itens concluídos viram um botão cinza inativo e descem automaticamente,
-            mantendo em destaque o que ainda falta.
+          <p className="text-[0.75rem] text-muted-foreground">
+            Marque os itens conforme for concluindo; a ordem permanece fixa para facilitar a conferência.
           </p>
         </div>
       </div>
 
       <div className="space-y-2">
-        {sortedItems.map((item) => {
+        {items.map((item) => {
           const isChecked = completed.includes(item.id);
           return (
             <div
               key={item.id}
               onClick={() => onToggle(item.id)}
               className={cn(
-                "checklist-item transition-colors transition-shadow duration-200 cursor-pointer select-none",
+                "checklist-item cursor-pointer select-none transition-colors transition-shadow duration-200",
                 isChecked
-                  ? "bg-gray-100/95 border-gray-300 text-gray-500 shadow-none"
+                  ? "bg-gray-100/95 border-gray-300 text-gray-600 shadow-none checklist-marked"
                   : "bg-card border-border text-foreground hover:bg-primary/5 hover:border-primary/30 hover:shadow-sm",
               )}
             >
@@ -48,7 +45,7 @@ export const PreparationTab = ({
                 type="checkbox"
                 className={cn(
                   "h-5 w-5 rounded border border-border cursor-pointer mt-0.5 transition-colors",
-                  isChecked && "border-gray-400 bg-gray-200",
+                  isChecked && "border-primary bg-primary text-primary-foreground",
                 )}
                 checked={isChecked}
                 readOnly
@@ -59,7 +56,7 @@ export const PreparationTab = ({
                     <div className="checklist-title">
                       {item.text}
                       {item.critical && (
-                        <span className="ml-1 text-[9px] text-destructive">
+                        <span className="ml-1 text-[0.7rem] text-destructive">
                           ⚡
                         </span>
                       )}
@@ -87,17 +84,6 @@ export const PreparationTab = ({
   );
 };
 
-function getSortedByCompletion(
-  items: ChecklistItem[],
-  completed: string[],
-): ChecklistItem[] {
-  const completedSet = new Set(completed);
-  const pending = items.filter((i) => !completedSet.has(i.id));
-  const done = items.filter((i) => completedSet.has(i.id));
-  // Mantém ordem relativa dentro de cada grupo
-  return [...pending, ...done];
-}
-
 const CriticalSummary = ({
   items,
   completed,
@@ -110,14 +96,14 @@ const CriticalSummary = ({
 
   if (!pending.length) {
     return (
-      <div className="card-elevated bg-secondary/10 border-secondary/30 text-[10px]">
+      <div className="card-elevated bg-secondary/10 border-secondary/30 text-[0.75rem]">
         ✅ Todos os itens críticos de preparação foram concluídos.
       </div>
     );
   }
 
   return (
-    <div className="card-elevated border-amber-300/80 bg-amber-50 text-[10px] space-y-1">
+    <div className="card-elevated border-amber-300/80 bg-amber-50 text-[0.75rem] space-y-1">
       <div className="font-semibold text-amber-800">
         ⚠️ Itens críticos pendentes ({pending.length}):
       </div>

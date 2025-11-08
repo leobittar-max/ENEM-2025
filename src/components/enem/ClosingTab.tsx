@@ -17,34 +17,31 @@ export const ClosingTab = ({
   stats,
   occurrences,
 }: ClosingTabProps) => {
-  const sortedItems = getSortedByCompletion(items, completed);
-
   return (
     <div className="space-y-3">
       <div className="card-elevated flex items-start gap-2">
-        <span className="mt-0.5">🔒</span>
+        <span className="mt-0.5 text-base">🔒</span>
         <div className="space-y-0.5">
-          <div className="text-xs font-semibold">
+          <div className="text-[0.9rem] font-semibold">
             Encerramento do dia
           </div>
-          <p className="text-[10px] text-muted-foreground">
-            Itens concluídos ficam em cinza claro e são enviados para o final da lista;
-            críticos pendentes seguem em destaque.
+          <p className="text-[0.75rem] text-muted-foreground">
+            Marque cada etapa de fechamento; a ordem segue o fluxo recomendado, sem reordenar itens concluídos.
           </p>
         </div>
       </div>
 
       <div className="space-y-2">
-        {sortedItems.map((item) => {
+        {items.map((item) => {
           const isChecked = completed.includes(item.id);
           return (
             <div
               key={item.id}
               onClick={() => onToggle(item.id)}
               className={cn(
-                "checklist-item transition-colors transition-shadow duration-200 cursor-pointer select-none",
+                "checklist-item cursor-pointer select-none transition-colors transition-shadow duration-200",
                 isChecked
-                  ? "bg-gray-100/95 border-gray-300 text-gray-500 shadow-none"
+                  ? "bg-gray-100/95 border-gray-300 text-gray-600 shadow-none checklist-marked"
                   : "bg-card border-border text-foreground hover:bg-primary/5 hover:border-primary/30 hover:shadow-sm",
                 item.critical && !isChecked && "border-amber-400/80",
               )}
@@ -53,7 +50,7 @@ export const ClosingTab = ({
                 type="checkbox"
                 className={cn(
                   "h-5 w-5 rounded border border-border cursor-pointer mt-0.5 transition-colors",
-                  isChecked && "border-gray-400 bg-gray-200",
+                  isChecked && "border-primary bg-primary text-primary-foreground",
                 )}
                 checked={isChecked}
                 readOnly
@@ -64,7 +61,7 @@ export const ClosingTab = ({
                     <div className="checklist-title">
                       {item.text}
                       {item.critical && (
-                        <span className="ml-1 text-[9px] text-destructive">
+                        <span className="ml-1 text-[0.7rem] text-destructive">
                           ⚡
                         </span>
                       )}
@@ -91,7 +88,7 @@ export const ClosingTab = ({
         <SummaryCard label="Presentes" value={stats.present} />
         <SummaryCard label="Ausentes" value={stats.absent} />
       </div>
-      <div className="card-elevated flex items-center justify-between text-[10px]">
+      <div className="card-elevated flex items-center justify-between text-[0.75rem]">
         <span>Ocorrências registradas</span>
         <span className="font-semibold text-primary">
           {occurrences.length}
@@ -101,16 +98,6 @@ export const ClosingTab = ({
   );
 };
 
-function getSortedByCompletion(
-  items: ChecklistItem[],
-  completed: string[],
-): ChecklistItem[] {
-  const set = new Set(completed);
-  const pending = items.filter((i) => !set.has(i.id));
-  const done = items.filter((i) => set.has(i.id));
-  return [...pending, ...done];
-}
-
 const SummaryCard = ({
   label,
   value,
@@ -119,7 +106,7 @@ const SummaryCard = ({
   value: number;
 }) => (
   <div className="card-elevated flex flex-col items-start gap-1">
-    <div className="text-[10px] text-muted-foreground">
+    <div className="text-[0.75rem] text-muted-foreground">
       {label}
     </div>
     <div className="text-lg font-semibold leading-none">
