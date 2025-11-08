@@ -12,9 +12,13 @@ import { SupervisionarPanel } from "@/components/enem/SupervisionarPanel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { useRoomProgressRealtime, RoomProgress } from "@/hooks/use-room-progress-realtime";
+import {
+  useRoomProgressRealtime,
+  RoomProgress,
+} from "@/hooks/use-room-progress-realtime";
 import { RoomCompletionDialog } from "@/components/enem/RoomCompletionDialog";
 import { toast } from "sonner";
+import { BottomNav } from "@/components/enem/BottomNav";
 
 const Index = () => {
   const {
@@ -95,10 +99,13 @@ const Index = () => {
     },
   });
 
+  const isMainContent =
+    !showHistory && !showSupervision && showLayout && coordinator;
+
   return (
     <div
       className={cn(
-        "min-h-screen w-full bg-background text-foreground no-x-overflow",
+        "min-h-screen w-full bg-background text-foreground no-x-overflow pb-14",
       )}
     >
       <SetupModal open={!coordinator} onSubmit={initializeCoordinator} />
@@ -140,8 +147,8 @@ const Index = () => {
 
           {/* Sidebar mobile */}
           {sidebarOpen && (
-            <div className="fixed inset-0 z-40 flex md:hidden">
-              <div className="h-full w-72 bg-sidebar-background shadow-xl">
+            <div className="fixed inset-0 z-40 flex md:hidden bg-background">
+              <div className="h-full w-full">
                 <Sidebar
                   coordinator={coordinator}
                   occurrences={state.occurrences}
@@ -164,17 +171,13 @@ const Index = () => {
                   nextExamCountdownValue={nextExamCountdownValue}
                 />
               </div>
-              <div
-                className="flex-1 bg-black/40"
-                onClick={() => setSidebarOpen(false)}
-              />
             </div>
           )}
 
           {/* Main */}
           <div className="flex-1 flex flex-col app-safe-area">
             {/* AppBar */}
-            {!showHistory && !showSupervision && (
+            {isMainContent && (
               <header className="sticky top-0 z-30 bg-card shadow-sm border-b border-border px-4 pt-2 pb-2 flex items-center gap-3">
                 <button
                   className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-full border bg-muted text-sm touch-target"
@@ -214,8 +217,8 @@ const Index = () => {
               </header>
             )}
 
-            {/* Tabs */}
-            {!showHistory && !showSupervision && (
+            {/* Tabs (renomeando visualmente Durante para Prova) */}
+            {isMainContent && (
               <nav className="bg-card px-2 pb-2 pt-1 border-b border-border">
                 <div className="tabbar-scroll">
                   <TabItem
@@ -231,7 +234,7 @@ const Index = () => {
                     onClick={() => setActiveTab("morning")}
                   />
                   <TabItem
-                    label="Durante"
+                    label="Prova"
                     icon="🕒"
                     active={activeTab === "during"}
                     onClick={() => setActiveTab("during")}
@@ -319,30 +322,33 @@ const Index = () => {
                 </>
               )}
             </main>
-
-            {/* Rodapé mobile */}
-            {!showHistory && !showSupervision && (
-              <div className="px-4 pb-2 pt-1 flex gap-2 md:hidden bg-background border-t border-border">
-                <Button
-                  className="flex-1 touch-target text-xs font-semibold"
-                  variant="outline"
-                  onClick={downloadPdfReport}
-                  aria-label="Baixar relatório completo em PDF"
-                >
-                  📑 Exportar Relatório PDF
-                </Button>
-                <Button
-                  className="w-24 touch-target text-xs font-semibold"
-                  variant="ghost"
-                  onClick={handleExit}
-                  aria-label="Sair e reiniciar configuração"
-                >
-                  ⏏ Sair
-                </Button>
-              </div>
-            )}
           </div>
         </div>
+      )}
+
+      {/* BottomNav global: só mostra quando já temos coordenador */}
+      {coordinator && (
+        <BottomNav
+          variant="root"
+          onNavigatePanel={() => {
+            setShowHistory(false);
+            setShowSupervision(false);
+          }}
+          onNavigateSupervision={() => {
+            setShowHistory(false);
+            setShowSupervision(true);
+          }}
+          onNavigateProva={() => {
+            setShowHistory(false);
+            setShowSupervision(false);
+            setActiveTab("during");
+          }}
+          onNavigateRelatorio={() => {
+            setShowHistory(false);
+            setShowSupervision(false);
+            setActiveTab("report");
+          }}
+        />
       )}
     </div>
   );

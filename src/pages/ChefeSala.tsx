@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useChefeSala } from "@/hooks/use-chefe-sala";
 import { InfoDialog } from "@/components/enem/InfoDialog";
 import { cn } from "@/lib/utils";
+import { BottomNav } from "@/components/enem/BottomNav";
 
 const ChefeSalaPage = () => {
   const { token } = useParams<{ token: string }>();
@@ -10,30 +11,36 @@ const ChefeSalaPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-xs text-muted-foreground">
-        Carregando painel do Chefe de Sala...
+      <div className="min-h-screen flex flex-col bg-background text-xs text-muted-foreground">
+        <div className="flex-1 flex items-center justify-center px-4 text-center">
+          Carregando painel do Chefe de Sala...
+        </div>
+        <BottomNav variant="external" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="max-w-sm rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-center space-y-2">
-          <div className="text-lg">⚠️</div>
-          <div className="text-sm font-semibold text-destructive">
-            Não foi possível acessar este painel
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {error}
+      <div className="min-h-screen flex flex-col bg-background">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="max-w-sm rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-center space-y-2">
+            <div className="text-lg">⚠️</div>
+            <div className="text-sm font-semibold text-destructive">
+              Não foi possível acessar este painel
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {error}
+            </div>
           </div>
         </div>
+        <BottomNav variant="external" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground px-4 py-3 space-y-3 no-x-overflow">
+    <div className="min-h-screen bg-background text-foreground px-4 py-3 space-y-3 no-x-overflow pb-16">
       <header className="card-elevated flex items-start gap-3">
         <div className="h-9 w-9 rounded-2xl bg-primary/10 flex items-center justify-center text-xl">
           🎓
@@ -120,6 +127,8 @@ const ChefeSalaPage = () => {
           </div>
         )}
       </main>
+
+      <BottomNav variant="external" />
     </div>
   );
 };

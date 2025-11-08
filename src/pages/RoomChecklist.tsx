@@ -7,6 +7,7 @@ import {
 } from "@/components/enem/room-checklist-data";
 import { InfoDialog } from "@/components/enem/InfoDialog";
 import { cn } from "@/lib/utils";
+import { BottomNav } from "@/components/enem/BottomNav";
 
 const STORAGE_PREFIX = "enem2025_room_checklist_v2";
 
@@ -62,46 +63,42 @@ const RoomChecklistPage = () => {
 
   if (!roomCode) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-[0.8rem] text-muted-foreground px-4 text-center">
-        Código de sala não informado.
+      <div className="min-h-screen flex flex-col bg-background text-[0.8rem] text-muted-foreground px-4 text-center pb-16">
+        <div className="flex-1 flex items-center justify-center">
+          Código de sala não informado.
+        </div>
+        <BottomNav variant="external" />
       </div>
     );
   }
 
   if (!room) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 text-center">
-        <div className="card-elevated max-w-sm space-y-2">
-          <div className="text-2xl">🤔</div>
-          <div className="text-[0.9rem] font-semibold">
-            Sala {roomCode} não encontrada
+      <div className="min-h-screen flex flex-col bg-background px-4 text-center pb-16">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="card-elevated max-w-sm space-y-2">
+            <div className="text-2xl">🤔</div>
+            <div className="text-[0.9rem] font-semibold">
+              Sala {roomCode} não encontrada
+            </div>
+            <p className="text-[0.75rem] text-muted-foreground">
+              Verifique se o endereço está correto.
+            </p>
+            <Link
+              to="/"
+              className="mt-1 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground px-3 py-1.5 text-[0.8rem]"
+            >
+              Voltar ao painel do coordenador
+            </Link>
           </div>
-          <p className="text-[0.75rem] text-muted-foreground">
-            Verifique se o endereço está correto. Exemplos válidos:
-            <br />
-            <span className="font-mono text-[0.7rem] block">
-              https://enem-2025-kohl.vercel.app/101
-            </span>
-            <span className="font-mono text-[0.7rem] block">
-              https://enem-2025-kohl.vercel.app/102
-            </span>
-            <span className="font-mono text-[0.7rem] block">
-              https://enem-2025-kohl.vercel.app/103
-            </span>
-          </p>
-          <Link
-            to="/"
-            className="mt-1 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground px-3 py-1.5 text-[0.8rem]"
-          >
-            Voltar ao painel do coordenador
-          </Link>
         </div>
+        <BottomNav variant="external" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col no-x-overflow">
+    <div className="min-h-screen bg-background text-foreground flex flex-col no-x-overflow pb-16">
       <header className="sticky top-0 z-20 bg-card/95 backdrop-blur border-b border-border px-4 pt-3 pb-2 shadow-sm">
         <div className="flex items-start gap-2">
           <div className="h-8 w-8 rounded-2xl bg-primary/10 flex items-center justify-center text-lg">
@@ -143,7 +140,7 @@ const RoomChecklistPage = () => {
         </div>
         <p className="mt-2 text-[0.7rem] text-muted-foreground">
           Marque cada item conforme os procedimentos forem executados. A ordem
-          segue o fluxo oficial para facilitar a leitura e evitar confusão.
+          segue o fluxo oficial para facilitar a leitura.
         </p>
       </header>
 
@@ -229,6 +226,8 @@ const RoomChecklistPage = () => {
           As marcações ficam salvas somente neste dispositivo (offline).
         </p>
       </main>
+
+      <BottomNav variant="external" />
     </div>
   );
 };
