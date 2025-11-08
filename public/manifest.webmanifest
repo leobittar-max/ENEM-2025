@@ -11,7 +11,9 @@
   "display_override": [
     "standalone",
     "minimal-ui",
-    "browser"
+    "browser",
+    "fullscreen",
+    "window-controls-overlay"
   ],
   "orientation": "portrait-primary",
   "background_color": "#f3f4ff",
