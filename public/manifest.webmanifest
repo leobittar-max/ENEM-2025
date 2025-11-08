@@ -23,25 +23,23 @@
   ],
   "icons": [
     {
-      "src": "/icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icons/enem-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
-      "src": "/icons/maskable-icon-192x192.png",
+      "src": "/icons/enem-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/enem-maskable-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/maskable-icon-512x512.png",
+      "src": "/icons/enem-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -55,7 +53,7 @@
       "url": "/?source=shortcut-coordenador",
       "icons": [
         {
-          "src": "/icons/icon-192x192.png",
+          "src": "/icons/enem-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -68,11 +66,27 @@
       "url": "/101?source=shortcut-101",
       "icons": [
         {
-          "src": "/icons/icon-192x192.png",
+          "src": "/icons/enem-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
       ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/enem-dashboard-720x1280.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Painel do Coordenador com resumo executivo e progresso por etapa."
+    },
+    {
+      "src": "/screenshots/enem-checklist-720x1280.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Checklist detalhado de preparação, durante a prova e encerramento."
     }
   ],
   "prefer_related_applications": false,
