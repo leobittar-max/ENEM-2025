@@ -1,8 +1,10 @@
 {
+  "id": "/",
   "name": "ENEM 2025 - Painel Coordenador e Chefes de Sala",
   "short_name": "ENEM 2025",
   "description": "Painel do Coordenador de Local e checklists simplificados para Chefes de Sala do ENEM 2025, com acesso rápido e offline.",
   "lang": "pt-BR",
+  "dir": "ltr",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -40,12 +42,6 @@
       "purpose": "maskable"
     }
   ],
-  "display_override": [
-    "window-controls-overlay",
-    "standalone",
-    "minimal-ui",
-    "browser"
-  ],
   "shortcuts": [
     {
       "name": "Painel do Coordenador",
@@ -73,5 +69,24 @@
         }
       ]
     }
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/screenshot-dashboard-1280x720.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Painel do Coordenador com checklists, histórico e supervisão."
+    },
+    {
+      "src": "/icons/screenshot-room-720x1280.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "label": "Checklist mobile do Chefe de Sala em modo standalone."
+    }
+  ],
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "browser"
   ]
 }
