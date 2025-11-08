@@ -31,7 +31,7 @@ interface RoomWithProgress {
 }
 
 export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
-  const [openDay, setOpenDay] = useState<"d1" | "d2" | null>(null);
+  const [openDay, setOpenDay] = useState<"d1" | "d2" | null>("d1");
 
   const {
     loading: loadingD1,
@@ -61,33 +61,34 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
   const { loadingRooms, roomsProgress } = useRoomsChecklistProgress();
 
   return (
-    <div className="space-y-3 no-x-overflow">
+    <div className="space-y-4 no-x-overflow">
       {/* Cabeçalho geral */}
-      <div className="card-elevated flex items-start gap-3">
-        <div className="h-8 w-8 rounded-2xl bg-primary/10 flex items-center justify-center text-lg">
+      <div className="rounded-3xl bg-card border border-border/80 px-4 py-4 shadow-md flex items-start gap-3">
+        <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-2xl">
           🕵️
         </div>
-        <div className="space-y-0.5">
-          <div className="text-xs md:text-sm font-semibold">
-            Supervisionar Salas e Equipe
+        <div className="space-y-1">
+          <div className="text-base font-semibold">
+            Supervisão Geral do Local
           </div>
-          <p className="text-[10px] md:text-xs text-muted-foreground">
-            Controle rápido da presença da equipe e do avanço dos checklists por sala.
+          <p className="text-[0.8rem] text-muted-foreground leading-snug">
+            Visual premium para acompanhar, em tempo real, presenças da equipe
+            e progresso dos checklists em todas as salas.
           </p>
         </div>
       </div>
 
       {/* Mensagem fora das datas oficiais */}
       {!allAllowed && (
-        <div className="card-elevated bg-muted/60 text-[9px] md:text-xs text-muted-foreground">
-          O registro de presença da equipe só estará disponível nos dias oficiais
-          de aplicação do ENEM (09/11 e 16/11).
+        <div className="rounded-2xl bg-amber-50 border border-amber-200 px-3.5 py-2.5 text-[0.8rem] text-amber-800 shadow-sm">
+          O registro consolidado da equipe é liberado automaticamente nos dias
+          oficiais (09/11 e 16/11). Antes disso, use apenas para conferências.
         </div>
       )}
 
       {/* Presença - Dia 1 */}
       <PresenceDayCard
-        label="Dia 09/11/2025 · 1º Dia"
+        label="1º Dia · 09/11/2025"
         isOpen={openDay === "d1"}
         onToggle={() => setOpenDay(openDay === "d1" ? null : "d1")}
         loading={loadingD1}
@@ -99,7 +100,7 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
 
       {/* Presença - Dia 2 */}
       <PresenceDayCard
-        label="Dia 16/11/2025 · 2º Dia"
+        label="2º Dia · 16/11/2025"
         isOpen={openDay === "d2"}
         onToggle={() => setOpenDay(openDay === "d2" ? null : "d2")}
         loading={loadingD2}
@@ -110,21 +111,30 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
       />
 
       {/* Progresso dos Checklists das Salas */}
-      <div className="card-elevated space-y-1.5">
-        <div className="text-[9px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          Progresso dos checklists das salas
+      <div className="rounded-3xl bg-card border border-border/85 px-4 py-3.5 shadow-md space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <div className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Checklists dos Chefes de Sala
+            </div>
+            <div className="text-sm font-semibold">
+              Progresso por sala em tempo real
+            </div>
+          </div>
+          <span className="text-xl">📊</span>
         </div>
-        <p className="text-[8px] md:text-[9px] text-muted-foreground">
-          Acompanhe o preenchimento dos itens pelos Chefes de Sala em cada sala.
+        <p className="text-[0.78rem] text-muted-foreground">
+          Visualize rapidamente quais salas estão adiantadas, em atenção ou
+          pendentes, com barras de progresso claras.
         </p>
 
         {loadingRooms ? (
-          <div className="text-[9px] md:text-xs text-muted-foreground">
+          <div className="text-[0.8rem] text-muted-foreground">
             Carregando salas e progresso...
           </div>
         ) : roomsProgress.length === 0 ? (
-          <div className="text-[9px] md:text-xs text-muted-foreground">
-            Nenhuma sala ou checklist de Chefe de Sala encontrada no Supabase.
+          <div className="text-[0.8rem] text-muted-foreground">
+            Nenhuma sala ou checklist de Chefe de Sala encontrado no Supabase.
           </div>
         ) : (
           <div className="space-y-1.5">
@@ -141,9 +151,9 @@ export const SupervisionarPanel = ({ onClose }: SupervisionarPanelProps) => {
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 rounded-full border text-[9px] md:text-xs text-muted-foreground hover:bg-muted"
+            className="px-4 py-2 rounded-2xl border border-border bg-card text-[0.8rem] font-semibold text-muted-foreground hover:bg-muted hover:text-foreground shadow-sm"
           >
-            Voltar ao painel
+            ⬅ Voltar ao painel
           </button>
         </div>
       )}
@@ -193,28 +203,29 @@ const PresenceDayCard = ({
   };
 
   return (
-    <div className="rounded-2xl border bg-card px-3 py-2 shadow-sm">
+    <div className="rounded-3xl bg-card border border-border/85 px-4 py-3.5 shadow-md">
+      {/* Cabeçalho do dia */}
       <button
         type="button"
-        className="w-full flex items-center gap-2 text-left"
+        className="w-full flex items-center gap-3 text-left"
         onClick={onToggle}
       >
         <div className="flex flex-col flex-1">
-          <span className="text-[10px] md:text-xs font-semibold">
+          <span className="text-[0.9rem] font-semibold">
             {label}
           </span>
-          <span className="text-[7px] md:text-[9px] text-muted-foreground">
-            Toque para {isOpen ? "recolher" : "ver"} a equipe cadastrada.
+          <span className="text-[0.75rem] text-muted-foreground">
+            Toque para {isOpen ? "recolher" : "ver"} a presença detalhada.
           </span>
         </div>
         {complete && members.length > 0 && (
-          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[7px] md:text-[9px] font-semibold">
+          <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[0.7rem] font-semibold">
             ✅ Equipe completa
           </span>
         )}
         <span
           className={cn(
-            "h-5 w-5 flex items-center justify-center rounded-full bg-muted text-[10px] text-muted-foreground transition-transform",
+            "h-6 w-6 flex items-center justify-center rounded-full bg-muted text-[0.9rem] text-muted-foreground transition-transform",
             isOpen && "rotate-180",
           )}
         >
@@ -222,9 +233,13 @@ const PresenceDayCard = ({
         </span>
       </button>
 
-      <div className="mt-1 flex items-center justify-between text-[7px] md:text-[9px] text-muted-foreground">
+      {/* Resumo rápido */}
+      <div className="mt-2 flex items-center justify-between text-[0.75rem] text-muted-foreground">
         <span>
-          Membros: <span className="font-semibold">{members.length}</span>
+          Membros:{" "}
+          <span className="font-semibold text-foreground">
+            {members.length}
+          </span>
         </span>
         <span>
           Presentes:{" "}
@@ -235,49 +250,49 @@ const PresenceDayCard = ({
       </div>
 
       {isOpen && (
-        <div className="mt-2 space-y-1.5">
-          {/* Controles de marcar todos */}
+        <div className="mt-3 space-y-2">
+          {/* Controles Marcar/Desmarcar todos */}
           <div className="flex flex-wrap gap-1.5 justify-end mb-1">
             <button
               type="button"
               onClick={handleMarkAll}
               disabled={!allowed || loading || members.length === 0}
               className={cn(
-                "px-2 py-1 rounded-full text-[7px] md:text-[9px] border touch-target min-h-[24px]",
+                "px-3 py-1.5 rounded-full text-[0.72rem] font-semibold border touch-target min-h-[30px]",
                 !allowed || loading || members.length === 0
                   ? "bg-muted text-muted-foreground border-border cursor-not-allowed"
-                  : "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100",
+                  : "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100 shadow-sm",
               )}
             >
-              Marcar todos
+              ✅ Marcar todos
             </button>
             <button
               type="button"
               onClick={handleUnmarkAll}
               disabled={!allowed || loading || members.length === 0}
               className={cn(
-                "px-2 py-1 rounded-full text-[7px] md:text-[9px] border touch-target min-h-[24px]",
+                "px-3 py-1.5 rounded-full text-[0.72rem] font-semibold border touch-target min-h-[30px]",
                 !allowed || loading || members.length === 0
                   ? "bg-muted text-muted-foreground border-border cursor-not-allowed"
-                  : "bg-red-50 text-red-700 border-red-300 hover:bg-red-100",
+                  : "bg-red-50 text-red-700 border-red-300 hover:bg-red-100 shadow-sm",
               )}
             >
-              Desmarcar todos
+              ✖ Desmarcar todos
             </button>
           </div>
 
           {!allowed && (
-            <div className="text-[8px] md:text-[9px] text-muted-foreground">
-              O registro deste dia só ficará ativo na data oficial da aplicação.
+            <div className="text-[0.72rem] text-muted-foreground">
+              Este dia será liberado automaticamente na data oficial da aplicação.
             </div>
           )}
 
           {loading ? (
-            <div className="text-[8px] md:text-[9px] text-muted-foreground">
+            <div className="text-[0.78rem] text-muted-foreground">
               Carregando equipe...
             </div>
           ) : members.length === 0 ? (
-            <div className="text-[8px] md:text-[9px] text-muted-foreground">
+            <div className="text-[0.78rem] text-muted-foreground">
               Nenhum membro de equipe cadastrado.
             </div>
           ) : (
@@ -327,23 +342,25 @@ const MemberRow = ({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 px-2 py-1.5 rounded-2xl border bg-card text-[8px] md:text-[9px]",
-        present && "border-emerald-400 bg-emerald-50",
+        "flex items-center gap-2 px-3 py-2 rounded-2xl border bg-card text-[0.75rem] shadow-sm",
+        present && "border-emerald-400 bg-emerald-50/90",
       )}
     >
       <div className="flex-1 min-w-0">
-        <div className="font-semibold text-foreground truncate">
-          {functionName}
+        <div className="flex items-center gap-1.5">
+          <div className="font-semibold text-foreground truncate">
+            {functionName}
+          </div>
           {roomLabel && (
-            <span className="ml-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-muted text-[7px] text-muted-foreground">
+            <span className="px-2 py-0.5 rounded-full bg-muted text-[0.65rem] text-muted-foreground">
               {roomLabel}
             </span>
           )}
         </div>
-        <div className="text-[7px] md:text-[8px] text-muted-foreground truncate">
+        <div className="text-[0.72rem] text-muted-foreground truncate">
           {name}
         </div>
-        <div className="text-[6px] md:text-[7px] text-muted-foreground truncate">
+        <div className="text-[0.6rem] text-muted-foreground truncate">
           CPF: {cpf || "não informado"}
         </div>
       </div>
@@ -351,15 +368,15 @@ const MemberRow = ({
         type="button"
         onClick={() => !disabled && onToggle(memberId)}
         className={cn(
-          "px-2 py-1 rounded-full text-[7px] md:text-[9px] font-semibold border transition-colors touch-target min-h-[28px]",
+          "px-3 py-1.5 rounded-full text-[0.72rem] font-semibold border transition-colors touch-target min-h-[30px]",
           disabled
             ? "bg-muted text-muted-foreground border-border cursor-not-allowed"
             : present
-            ? "bg-emerald-500 text-white border-emerald-600"
-            : "bg-muted text-muted-foreground border-border hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-400",
+            ? "bg-emerald-500 text-white border-emerald-600 shadow-md"
+            : "bg-white text-emerald-700 border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 shadow-sm",
         )}
       >
-        {present ? "Presente ✅" : "Marcar presença"}
+        {present ? "Presente" : "Marcar"}
       </button>
     </div>
   );
@@ -554,31 +571,31 @@ function useRoomsChecklistProgress() {
 }
 
 const RoomProgressRow = ({ room }: { room: RoomWithProgress }) => (
-  <div className="rounded-2xl border bg-card px-3 py-2 flex flex-col gap-1.5">
+  <div className="rounded-2xl border bg-card px-3.5 py-2.5 flex flex-col gap-1.5 shadow-sm">
     <div className="flex items-center gap-2">
       <div className="flex flex-col flex-1 min-w-0">
-        <span className="text-[9px] md:text-[10px] font-semibold">
+        <span className="text-[0.8rem] font-semibold">
           Sala {room.code}
         </span>
         {room.label !== room.code && (
-          <span className="text-[7px] md:text-[8px] text-muted-foreground truncate">
+          <span className="text-[0.7rem] text-muted-foreground truncate">
             {room.label}
           </span>
         )}
       </div>
       <div className="flex flex-col items-end gap-0 leading-tight">
-        <span className="text-[6px] md:text-[8px] text-muted-foreground">
+        <span className="text-[0.65rem] text-muted-foreground">
           Checklist Chefe de Sala
         </span>
-        <span className="text-[8px] md:text-[10px] font-semibold text-primary">
+        <span className="text-[0.8rem] font-semibold text-primary">
           {room.percent}%{" "}
-          <span className="text-[6px] md:text-[8px] text-muted-foreground">
+          <span className="text-[0.65rem] text-muted-foreground">
             ({room.completed}/{room.total})
           </span>
         </span>
       </div>
     </div>
-    <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+    <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
       <div
         className={cn(
           "h-full rounded-full transition-all",
