@@ -42,18 +42,17 @@ export const Sidebar = ({
     <aside
       className={cn(
         "flex h-full flex-col gap-4 border-r border-border bg-sidebar px-4 py-5 shadow-sm md:h-screen",
-        // Mobile: ocupa a tela toda. Desktop: largura fixa confortável.
         "w-full md:w-80 md:max-w-sm",
       )}
     >
       {/* Cabeçalho */}
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-0.5">
-          <div className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-sidebar-foreground/80">
+          <div className="flex items-center gap-1.5 text-[0.9rem] font-semibold uppercase tracking-wide text-sidebar-foreground/80">
             <span className="text-xl">🎓</span>
             <span>ENEM 2025</span>
           </div>
-          <p className="text-[0.9rem] text-sidebar-foreground/85">
+          <p className="text-[0.82rem] text-sidebar-foreground/85">
             Painel do Coordenador de Local
           </p>
           <p className="text-[0.7rem] text-sidebar-foreground/45">
@@ -63,7 +62,7 @@ export const Sidebar = ({
         {onCloseMobile && (
           <button
             onClick={onCloseMobile}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-red-500/85 bg-white text-base font-bold text-red-600 shadow-md hover:bg-red-50 active:scale-95 md:hidden"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-red-500/90 bg-white text-base font-bold text-red-600 shadow-md hover:bg-red-50 active:scale-95 md:hidden"
             aria-label="Fechar painel lateral"
           >
             ✕
@@ -122,7 +121,7 @@ export const Sidebar = ({
               Countdown para o próximo dia de provas
             </span>
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-[0.75rem] text-sidebar-foreground/65 line-clamp-1">
+              <span className="text-[0.74rem] text-sidebar-foreground/65 line-clamp-1">
                 {countdownLabel}
               </span>
               <span className="font-mono text-[0.95rem] font-semibold text-primary">
@@ -150,47 +149,44 @@ export const Sidebar = ({
         </div>
       )}
 
-      {/* Ações principais */}
-      <section className="mt-2 space-y-1.75">
-        <SidebarButton
+      {/* Ações principais - apenas ícone + label curto */}
+      <section className="mt-2 flex flex-col gap-2">
+        <SidebarPillButton
           onClick={onOpenHistory}
-          variant="soft"
           icon="📋"
-          label="Ver Histórico Completo"
-          description="Linha do tempo com todos os registros do dia."
+          label="Histórico"
+          variant="neutral"
         />
-        <SidebarButton
+        <SidebarPillButton
           onClick={onOpenSupervision}
-          variant="primary-soft"
           icon="🕵️"
-          label="Supervisionar"
-          description="Presenças da equipe e progresso por sala."
+          label="Supervisão"
+          variant="primary"
         />
         {showBackToPanel && onBackToPanel && (
-          <SidebarButton
+          <SidebarPillButton
             onClick={onBackToPanel}
-            variant="success-soft"
-            icon="⬅"
-            label="Voltar ao Painel"
-            description="Retornar à visão principal do coordenador."
+            icon="⬅️"
+            label="Painel"
+            variant="success"
           />
         )}
       </section>
 
-      {/* Rodapé / sair */}
-      <div className="mt-auto space-y-2.5 pt-2">
-        <button
-          type="button"
+      {/* Sair */}
+      <div className="mt-2 pt-1">
+        <SidebarPillButton
           onClick={onExit}
-          className="w-full rounded-2xl border border-red-300/95 bg-red-50 px-3.5 py-3 text-left text-[0.9rem] font-semibold text-red-700 hover:bg-red-100 hover:border-red-500 transition-colors flex items-center gap-2 shadow-[0_3px_10px_rgba(248,113,113,0.22)]"
-        >
-          <span>⏏ Sair do Painel</span>
-        </button>
-        <p className="text-[0.72rem] text-sidebar-foreground/60 leading-relaxed">
-          Use este painel como guia operacional. Em caso de dúvida, prevalecem
-          sempre os comunicados e manuais oficiais do INEP.
-        </p>
+          icon="⏏️"
+          label="Sair"
+          variant="danger"
+        />
       </div>
+
+      <p className="mt-1 text-[0.7rem] text-sidebar-foreground/60 leading-relaxed">
+        Use este painel como guia operacional. Em caso de dúvida, prevalecem
+        sempre os comunicados e manuais oficiais do INEP.
+      </p>
     </aside>
   );
 };
@@ -212,49 +208,40 @@ const MiniStat = ({ label, value }: { label: string; value: number }) => (
   </div>
 );
 
-interface SidebarButtonProps {
+interface SidebarPillButtonProps {
   onClick: () => void;
   icon: string;
   label: string;
-  description?: string;
-  variant?: "soft" | "primary-soft" | "success-soft";
+  variant?: "neutral" | "primary" | "success" | "danger";
 }
 
-const SidebarButton = ({
+const SidebarPillButton = ({
   onClick,
   icon,
   label,
-  description,
-  variant = "soft",
-}: SidebarButtonProps) => {
+  variant = "neutral",
+}: SidebarPillButtonProps) => {
   const base =
-    "w-full rounded-2xl px-3.5 py-2.75 text-left flex flex-col gap-0.25 border transition-colors shadow-[0_2px_8px_rgba(15,23,42,0.05)]";
-  const variants: Record<string, string> = {
-    soft:
-      "bg-white border-sidebar-border/80 hover:bg-gray-50 text-sidebar-foreground",
-    "primary-soft":
-      "bg-primary/6 border-primary/40 text-primary hover:bg-primary/10",
-    "success-soft":
+    "w-full flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-[0.86rem] font-semibold transition-colors shadow-[0_2px_8px_rgba(15,23,42,0.05)] border";
+  const styles: Record<string, string> = {
+    neutral:
+      "bg-white border-sidebar-border/80 text-sidebar-foreground hover:bg-gray-50",
+    primary:
+      "bg-primary/8 border-primary/40 text-primary hover:bg-primary/14",
+    success:
       "bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100",
+    danger:
+      "bg-red-50 border-red-300 text-red-700 hover:bg-red-100 hover:border-red-500",
   };
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={cn(base, variants[variant])}
+      className={cn(base, styles[variant])}
     >
-      <div className="flex items-center gap-1.75">
-        <span className="text-[1.1rem] leading-none">{icon}</span>
-        <span className="text-[0.9rem] font-semibold leading-tight">
-          {label}
-        </span>
-      </div>
-      {description && (
-        <span className="mt-0.25 text-[0.75rem] text-sidebar-foreground/65 leading-snug">
-          {description}
-        </span>
-      )}
+      <span className="text-[1.1rem] leading-none">{icon}</span>
+      <span>{label}</span>
     </button>
   );
 };
